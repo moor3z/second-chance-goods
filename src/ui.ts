@@ -103,6 +103,8 @@ export function page(ctx: RenderCtx, o: PageOpts): Response {
 <meta name="robots" content="${robots}">
 ${canonical ? h`<link rel="canonical" href="${canonical}">` : ''}
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/img/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/source-serif-4.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/css/site.css?v=${ASSET_VERSION}">

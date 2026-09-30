@@ -23,6 +23,7 @@ export async function homePage(ctx: RenderCtx, cat: Catalogue): Promise<Response
 
   const main = h`
 <section class="hero">
+ <div class="wrap hero-inner">
   <div class="hero-copy">
     <p class="eyebrow">Pre-loved. Ready for what’s next.</p>
     <h1><span>Great finds.</span> <span>Second chances.</span></h1>
@@ -36,6 +37,7 @@ export async function homePage(ctx: RenderCtx, cat: Catalogue): Promise<Response
       <img src="/assets/img/hero.webp" width="1032" height="812" alt="A wooden sideboard styled with a vintage radio, glass and ceramic vases, a brass lamp and a row of records" fetchpriority="high">
     </picture>
   </div>
+ </div>
 </section>
 
 <section class="assure" aria-label="Buying with confidence">
