@@ -1,0 +1,17 @@
+{
+  "name": "scg-ebay-sync",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.11.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260930.0",
+    "typescript": "^6.0.0",
+    "wrangler": "^4.144.0"
+  }
+}

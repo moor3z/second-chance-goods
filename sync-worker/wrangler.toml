@@ -1,0 +1,29 @@
+# Scheduled Worker that copies the active eBay inventory into D1 for the website.
+name = "scg-ebay-sync"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+# Runs every 15 minutes; SYNC_INTERVAL_MINUTES decides how often a full sync actually happens.
+# A failed sync is retried on the next tick. Keep the interval well under 6 hours (eBay's display limit).
+[triggers]
+crons = ["*/15 * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "scg-catalogue"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+[vars]
+SYNC_INTERVAL_MINUTES = "30"
+EBAY_SITE_ID = "3"                # 3 = eBay UK
+EBAY_COMPAT_LEVEL = "1451"
+EBAY_PAGE_SIZE = "100"            # GetSellerList allows up to 200
+EBAY_END_WINDOW_DAYS = "60"       # active listings end (or renew) within this window; eBay max is 120
+EBAY_USE_OUTPUT_SELECTOR = "true" # trims responses to the fields we use; set "false" if eBay rejects it
+MAX_DROP_RATIO = "0.5"            # refuse to publish if active items fall by more than 50% (use ?force=1 to override)
+
+[observability]
+enabled = true
+
+# Secrets (set with `npx wrangler secret put NAME`, never in this file):
+#   EBAY_CLIENT_ID, EBAY_CLIENT_SECRET, EBAY_REFRESH_TOKEN, SYNC_TOKEN

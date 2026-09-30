@@ -1,0 +1,19 @@
+# Cloudflare Pages project: Second Chance Goods catalogue website.
+# Pages reads this file when it is committed to the repo (build system v2+).
+name = "second-chance-goods"
+pages_build_output_dir = "./public"
+compatibility_date = "2026-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "scg-catalogue"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+[vars]
+DATA_MODE = "live"
+# Your real domain once connected (no trailing slash). Leave as-is until you have one.
+SITE_URL = ""
+# Hostnames allowed to be indexed by search engines; demo mode is refused on these.
+PRODUCTION_HOSTS = ""
+MAX_DATA_AGE_HOURS = "6"
+SYNC_INTERVAL_MINUTES = "30"
