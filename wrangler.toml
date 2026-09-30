@@ -7,7 +7,7 @@ compatibility_date = "2026-09-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "scg-catalogue"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "ce08ccdf-c519-4646-a13d-9f1871d7d2e5"
 
 [vars]
 DATA_MODE = "live"
