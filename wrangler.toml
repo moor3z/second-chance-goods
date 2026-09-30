@@ -16,4 +16,4 @@ SITE_URL = ""
 # Hostnames allowed to be indexed by search engines; demo mode is refused on these.
 PRODUCTION_HOSTS = ""
 MAX_DATA_AGE_HOURS = "6"
-SYNC_INTERVAL_MINUTES = "30"
+SYNC_INTERVAL_MINUTES = "15"
