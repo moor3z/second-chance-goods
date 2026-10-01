@@ -1,6 +1,5 @@
 import { BUSINESS } from '../config';
 import { getCategory, SITE_CATEGORIES } from '../categories';
-import { ebayImage } from '../format';
 import { h } from '../html';
 import { icons, page, productCard, type RenderCtx } from '../ui';
 import type { Catalogue } from '../catalogue';
@@ -10,13 +9,10 @@ export async function homePage(ctx: RenderCtx, cat: Catalogue): Promise<Response
   const isDemo = ctx.meta.mode === 'demo';
   const statBySlug = new Map(ctx.stats.map((s) => [s.slug, s]));
 
-  // Five picture tiles: the featured groups that have stock, topped up with the biggest other groups.
+  // Picture tiles: the five main groups that have stock, then everything else in stock as a smaller row.
   const withStock = SITE_CATEGORIES.filter((c) => (statBySlug.get(c.slug)?.count || 0) > 0);
-  const tiles = [
-    ...withStock.filter((c) => c.featured),
-    ...withStock.filter((c) => !c.featured).sort((a, b) => statBySlug.get(b.slug)!.count - statBySlug.get(a.slug)!.count),
-  ].slice(0, 5);
-  const others = withStock.filter((c) => !tiles.includes(c));
+  const tiles = withStock.filter((c) => c.featured);
+  const others = withStock.filter((c) => !c.featured);
 
   const feedback = ctx.meta.sellerFeedbackPercent ? `${ctx.meta.sellerFeedbackPercent}%` : BUSINESS.verified.feedbackPercent;
   const hasStock = featured.length > 0;
@@ -48,18 +44,19 @@ export async function homePage(ctx: RenderCtx, cat: Catalogue): Promise<Response
   </ul>
 </section>
 
-${tiles.length ? h`<section class="wrap section" aria-labelledby="cats-h">
+${tiles.length || others.length ? h`<section class="wrap section" aria-labelledby="cats-h">
   <h2 id="cats-h" class="section-title">Find your kind of treasure</h2>
-  <ul class="cat-tiles">
-    ${tiles.map((c) => {
-      const s = statBySlug.get(c.slug)!;
-      const cover = isDemo ? c.demoCover || s.cover : s.cover ? ebayImage(s.cover, 500) : null;
-      return h`<li><a class="cat-tile" href="/category/${c.slug}">
-        <span class="cat-img">${cover ? h`<img src="${cover}" alt="" width="338" height="320" loading="lazy" decoding="async">` : ''}</span>
-        <span class="cat-name">${c.name}</span></a></li>`;
-    })}
-  </ul>
-  ${others.length ? h`<p class="more-cats"><span>Also in stock:</span> ${others.map((c) => h`<a href="/category/${c.slug}">${c.name}</a>`)}</p>` : ''}
+  ${tiles.length ? h`<ul class="cat-tiles">
+    ${tiles.map((c) => h`<li><a class="cat-tile" href="/category/${c.slug}">
+        <span class="cat-img"><img src="${c.cover}" alt="" width="640" height="640" loading="lazy" decoding="async"></span>
+        <span class="cat-name">${c.name}</span></a></li>`)}
+  </ul>` : ''}
+  ${others.length ? h`<h3 class="cat-sub">Also in stock:</h3>
+  <ul class="cat-tiles cat-tiles-small">
+    ${others.map((c) => h`<li><a class="cat-tile" href="/category/${c.slug}">
+        <span class="cat-img"><img src="${c.cover}" alt="" width="640" height="640" loading="lazy" decoding="async"></span>
+        <span class="cat-name">${c.name}</span></a></li>`)}
+  </ul>` : ''}
 </section>` : ''}
 
 <section class="wrap section" aria-labelledby="feat-h">

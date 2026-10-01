@@ -228,7 +228,7 @@ export class DemoCatalogue implements Catalogue {
   async categoryStats() {
     return SITE_CATEGORIES.map((c) => {
       const inCat = DEMO_LISTINGS.filter((l) => l.siteCategory === c.slug);
-      return { slug: c.slug, count: inCat.length, cover: c.demoCover || inCat[0]?.images[0] || null };
+      return { slug: c.slug, count: inCat.length, cover: c.cover };
     }).filter((s) => s.count > 0);
   }
   async featured(n: number) {
