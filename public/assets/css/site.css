@@ -166,7 +166,9 @@ main:focus { outline: none; }
 .offer-bar { background: #fff1ea; border-bottom: 1px solid #f6c9b3; color: var(--ink); }
 .offer-inner { display: flex; align-items: center; gap: .75rem; padding-block: .6rem; font-size: .95rem; }
 .offer-inner .icon { width: 22px; height: 22px; color: var(--orange); flex: none; }
+.offer-inner > div { min-width: 0; }
 .offer-inner p { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.offer-inner p + p { margin-top: .25rem; }
 .offer-bar strong { font-weight: 700; }
 .offer-code { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; overflow-wrap: anywhere; background: var(--white); border: 1px dashed var(--orange); border-radius: 3px; padding: 0 .4rem; letter-spacing: .04em; }
 .price-coupon { color: #1e7a3c; font-weight: 500; }

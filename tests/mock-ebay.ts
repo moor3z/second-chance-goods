@@ -34,6 +34,10 @@ export interface MockOptions {
   /** First Trading call returns an expired-token error. */
   expireFirstToken?: boolean;
   rateLimit?: boolean;
+  /** Running coded coupons returned by the mock Marketing API. */
+  coupons?: { code: string; percent?: number; amountOff?: number; maxOff?: number; minAmount?: number; all?: boolean; listingIds?: string[]; type?: 'PUBLIC' | 'PRIVATE'; endDate?: string }[];
+  /** Simulate a token without the marketing scope. */
+  marketingForbidden?: boolean;
 }
 
 export function mockEbay(opts: MockOptions) {
@@ -51,6 +55,25 @@ export function mockEbay(opts: MockOptions) {
       if (opts.tokenError === 'http500') return new Response('oops', { status: 500 });
       tokenCount++;
       return Response.json({ access_token: `v^1.1#i^1#TESTTOKEN${tokenCount}xxxxxxxxxxxxxxxx`, expires_in: 7200 });
+    }
+    if (url.includes('/sell/marketing/v1/')) {
+      calls.push({ url });
+      if (opts.marketingForbidden) return new Response('{"errors":[{"errorId":1100,"message":"Access denied"}]}', { status: 403 });
+      const cs = opts.coupons || [];
+      if (url.includes('/promotion?')) {
+        return Response.json({ total: cs.length, promotions: cs.map((c, i) => ({ promotionId: `p${i}`, promotionType: 'CODED_COUPON', promotionStatus: 'RUNNING', promotionHref: `https://api.ebay.com/sell/marketing/v1/item_promotion/p${i}@EBAY_GB` })) });
+      }
+      const m = /item_promotion\/p(\d+)|promotion\/p(\d+)@EBAY_GB\/get_listing_set/.exec(url);
+      const c = cs[Number(m?.[1] ?? m?.[2])];
+      if (!c) return new Response('{}', { status: 404 });
+      if (url.includes('get_listing_set')) return Response.json({ total: (c.listingIds || []).length, listings: (c.listingIds || []).map((id) => ({ listingId: id })) });
+      return Response.json({
+        name: `Coupon ${c.code}`, promotionStatus: 'RUNNING', promotionType: 'CODED_COUPON', startDate: '2026-09-01T00:00:00.000Z', endDate: c.endDate ?? '2026-10-31T22:59:59.000Z',
+        couponConfiguration: { couponCode: c.code, couponType: c.type || 'PUBLIC', maxCouponRedemptionPerUser: 1 },
+        inventoryCriterion: c.all ? { inventoryCriterionType: 'INVENTORY_ANY' } : { inventoryCriterionType: 'INVENTORY_BY_RULE' },
+        discountRules: [{ discountBenefit: c.percent ? { percentageOffOrder: String(c.percent) } : { amountOffOrder: { value: String(c.amountOff), currency: 'GBP' } },
+          discountSpecification: c.minAmount ? { minAmount: { value: String(c.minAmount), currency: 'GBP' } } : {}, ...(c.maxOff ? { maxDiscountAmount: { value: String(c.maxOff), currency: 'GBP' } } : {}) }],
+      });
     }
     const headers = new Headers(init?.headers);
     const callName = headers.get('x-ebay-api-call-name') || '';

@@ -67,7 +67,7 @@ test('data older than six hours is flagged stale; untrusted sources are ignored'
   assert.equal(allowed.snapshotId, 'snap1');
 });
 
-import { activeCoupon, couponPrice } from '../src/config';
+import { manualCoupon as activeCoupon, couponPrice, syncedCoupons, bestCoupon } from '../src/config';
 
 test('coupon settings: prices, cap, minimum spend and expiry', () => {
   const env = { COUPON_CODE: 'scgoodsoct26', COUPON_PERCENT: '30', COUPON_MAX_OFF: '100', COUPON_ENDS: '2026-10-31' };
@@ -84,4 +84,22 @@ test('coupon settings: prices, cap, minimum spend and expiry', () => {
   const min = activeCoupon({ COUPON_CODE: 'X', COUPON_PERCENT: '10', COUPON_MIN_SPEND: '20' })!;
   assert.equal(couponPrice(1999, min), null);
   assert.equal(couponPrice(2000, min), 1800);
+});
+
+test('coupons synced from eBay: public only, dates, eligibility, best of several', () => {
+  const now = new Date('2026-10-01T12:00:00Z');
+  const json = JSON.stringify([
+    { code: 'TENOFF', percent: 10, amountOffPence: null, maxOffPence: 0, minSpendPence: 0, ends: '2026-10-31T22:59:59.000Z', eligible: 'all', isPublic: true },
+    { code: 'BIGSPEND', percent: null, amountOffPence: 500, maxOffPence: 0, minSpendPence: 3000, ends: null, eligible: ['111'], isPublic: true },
+    { code: 'SECRET', percent: 50, amountOffPence: null, maxOffPence: 0, minSpendPence: 0, ends: null, eligible: 'all', isPublic: false },
+    { code: 'OLD', percent: 50, amountOffPence: null, maxOffPence: 0, minSpendPence: 0, ends: '2026-09-30T22:59:59.000Z', eligible: 'all', isPublic: true },
+    { code: 'LATER', percent: 50, amountOffPence: null, maxOffPence: 0, minSpendPence: 0, starts: '2026-11-01T00:00:00.000Z', ends: null, eligible: 'all', isPublic: true },
+  ]);
+  const cs = syncedCoupons(json, now);
+  assert.deepEqual(cs.map((c) => c.code), ['TENOFF', 'BIGSPEND'], 'private, expired and not-yet-started coupons are left out');
+  assert.equal(couponPrice(4000, cs[1], '222'), null, 'amount coupon only on its listed items');
+  assert.equal(couponPrice(4000, cs[1], '111'), 3500);
+  assert.equal(bestCoupon(cs, 4000, '111')!.coupon.code, 'BIGSPEND', 'biggest saving wins (£5 beats 10% of £40)');
+  assert.equal(bestCoupon(cs, 2000, '111')!.coupon.code, 'TENOFF', 'below the £30 minimum, the 10% code applies instead');
+  assert.equal(syncedCoupons('not json', now).length, 0);
 });

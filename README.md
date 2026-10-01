@@ -100,6 +100,17 @@ If the first sync fails with an eBay error mentioning `OutputSelector`, set
   the site keeps the items but hides prices and says to check eBay.
 - Photos are loaded from eBay's image servers, not copied.
 
+## Coupons and offers
+
+The sync also reads your **running coded coupons** from eBay (Marketing API) every time it runs. Public coupons
+are shown automatically: an offer bar under the menu, and the coupon price in green under each eligible
+buy-it-now price. Private coupons are never shown. Each coupon disappears at its eBay end time.
+
+- The eBay authorisation must include the marketing scope; `npm run ebay:auth` requests it. If the Worker logs
+  `coupon_lookup_failed … sell.marketing.readonly`, re-run that command.
+- To force a particular offer (or show one eBay doesn't report), fill in the `COUPON_*` lines in `wrangler.toml`.
+  A manual coupon overrides the automatic ones; leave `COUPON_CODE` empty for automatic.
+
 ## Everyday changes
 
 | To change | Edit |

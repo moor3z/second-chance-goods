@@ -24,39 +24,100 @@ export interface Env {
 
 export interface Coupon {
   code: string;
-  percent: number;
+  /** Percentage off (null for a fixed-amount coupon). */
+  percent: number | null;
+  /** Fixed amount off in pence (null for a percentage coupon). */
+  amountOffPence: number | null;
   /** Maximum discount in pence (0 = no cap). */
   maxOffPence: number;
   /** Minimum item price in pence for the code to apply (0 = none). */
   minSpendPence: number;
-  /** Last day the code works, YYYY-MM-DD (UK time), or null if open-ended. */
+  /** When the code stops working: an ISO date-time from eBay, or YYYY-MM-DD (UK) from manual settings. Null = open-ended. */
   ends: string | null;
+  /** 'all', or the eBay item IDs it applies to. */
+  eligible: 'all' | Set<string>;
+  source: 'ebay' | 'manual';
 }
 
 const londonDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' });
 
-/** The coupon to advertise, or null if none is configured or it has ended. */
-export function activeCoupon(env: Env, now = new Date()): Coupon | null {
+function stillValid(c: { starts?: string | null; ends: string | null }, now: Date): boolean {
+  if (c.starts && Date.parse(c.starts) > now.getTime()) return false;
+  if (!c.ends) return true;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(c.ends)) return londonDate.format(now) <= c.ends;
+  const t = Date.parse(c.ends);
+  return Number.isFinite(t) ? t > now.getTime() : false;
+}
+
+/** Manual coupon from the settings file (overrides anything synced from eBay). */
+export function manualCoupon(env: Env, now = new Date()): Coupon | null {
   const code = (env.COUPON_CODE || '').trim().toUpperCase();
   const percent = Number(env.COUPON_PERCENT);
   if (!code || !Number.isFinite(percent) || percent <= 0 || percent >= 100) return null;
   const ends = (env.COUPON_ENDS || '').trim();
   if (ends && !/^\d{4}-\d{2}-\d{2}$/.test(ends)) return null;
-  if (ends && londonDate.format(now) > ends) return null;
   const pounds = (v: string | undefined) => Math.max(0, Math.round((Number(v) || 0) * 100));
-  return { code, percent, maxOffPence: pounds(env.COUPON_MAX_OFF), minSpendPence: pounds(env.COUPON_MIN_SPEND), ends: ends || null };
+  const c: Coupon = { code, percent, amountOffPence: null, maxOffPence: pounds(env.COUPON_MAX_OFF), minSpendPence: pounds(env.COUPON_MIN_SPEND), ends: ends || null, eligible: 'all', source: 'manual' };
+  return stillValid(c, now) ? c : null;
 }
 
-/** Price after the coupon, in pence, or null if the code doesn't apply to this price. Matches eBay's percentage-off rounding to the penny. */
-export function couponPrice(pricePence: number, c: Coupon): number | null {
+/** Coupons synced from eBay by the Worker (JSON in sync_state), keeping only public, currently valid ones. */
+export function syncedCoupons(json: string | null | undefined, now = new Date()): Coupon[] {
+  if (!json) return [];
+  let raw: unknown;
+  try {
+    raw = JSON.parse(json);
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(raw)) return [];
+  const out: Coupon[] = [];
+  for (const r of raw as Record<string, unknown>[]) {
+    if (!r || typeof r.code !== 'string' || r.isPublic === false) continue;
+    const percent = typeof r.percent === 'number' && r.percent > 0 && r.percent < 100 ? r.percent : null;
+    const amount = typeof r.amountOffPence === 'number' && r.amountOffPence > 0 ? r.amountOffPence : null;
+    if (!percent && !amount) continue;
+    const c: Coupon = {
+      code: r.code.toUpperCase(), percent, amountOffPence: percent ? null : amount,
+      maxOffPence: typeof r.maxOffPence === 'number' ? r.maxOffPence : 0,
+      minSpendPence: typeof r.minSpendPence === 'number' ? r.minSpendPence : 0,
+      ends: typeof r.ends === 'string' ? r.ends : null,
+      eligible: r.eligible === 'all' ? 'all' : new Set(Array.isArray(r.eligible) ? (r.eligible as unknown[]).map(String) : []),
+      source: 'ebay',
+    };
+    if (stillValid({ starts: typeof r.starts === 'string' ? r.starts : null, ends: c.ends }, now)) out.push(c);
+  }
+  return out.sort((a, b) => (b.percent || 0) - (a.percent || 0) || (b.amountOffPence || 0) - (a.amountOffPence || 0)).slice(0, 3);
+}
+
+/** All coupons to advertise: the manual one if set, otherwise whatever eBay says is running. */
+export function activeCoupons(env: Env, syncedJson: string | null | undefined, now = new Date()): Coupon[] {
+  const manual = manualCoupon(env, now);
+  return manual ? [manual] : syncedCoupons(syncedJson, now);
+}
+
+/** Price after the coupon, in pence, or null if the code doesn't apply to this item/price. Percentages round to the penny like eBay. */
+export function couponPrice(pricePence: number, c: Coupon, itemId?: string): number | null {
   if (pricePence <= 0 || pricePence < c.minSpendPence) return null;
-  let off = Math.round((pricePence * c.percent) / 100);
+  if (c.eligible !== 'all' && (!itemId || !c.eligible.has(itemId))) return null;
+  let off = c.percent ? Math.round((pricePence * c.percent) / 100) : c.amountOffPence || 0;
   if (c.maxOffPence) off = Math.min(off, c.maxOffPence);
+  off = Math.min(off, pricePence);
   return off > 0 ? pricePence - off : null;
 }
 
+/** The coupon giving the biggest saving on this item, if any. */
+export function bestCoupon(coupons: Coupon[], pricePence: number, itemId: string): { coupon: Coupon; price: number } | null {
+  let best: { coupon: Coupon; price: number } | null = null;
+  for (const c of coupons) {
+    const price = couponPrice(pricePence, c, itemId);
+    if (price !== null && (!best || price < best.price)) best = { coupon: c, price };
+  }
+  return best;
+}
+
 /** Bump when CSS/JS change so browsers fetch the new files. */
-export const ASSET_VERSION = '2026-10-01.5';
+export const ASSET_VERSION = '2026-10-01.6';
 
 export const BUSINESS = {
   legalName: 'Second Chance Goods Ltd',

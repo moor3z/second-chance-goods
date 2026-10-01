@@ -31,6 +31,8 @@ export interface CatalogueMeta {
   /** True when the last good sync is older than the permitted display age. */
   stale: boolean;
   sellerFeedbackPercent: string | null;
+  /** Raw JSON of coupons synced from eBay, if any. */
+  couponsJson: string | null;
 }
 
 export type SortKey = 'newest' | 'price-asc' | 'price-desc';

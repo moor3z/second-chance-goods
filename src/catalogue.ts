@@ -86,7 +86,7 @@ export class D1Catalogue implements Catalogue {
   meta(): Promise<CatalogueMeta> {
     this.metaPromise ??= (async () => {
       const { results } = await this.db
-        .prepare(`SELECT key, value FROM sync_state WHERE key IN ('current_snapshot','last_success_at','item_count','source','seller_feedback_percent')`)
+        .prepare(`SELECT key, value FROM sync_state WHERE key IN ('current_snapshot','last_success_at','item_count','source','seller_feedback_percent','coupons')`)
         .all<{ key: string; value: string }>();
       const s = Object.fromEntries(results.map((r) => [r.key, r.value]));
       const source = s.source || '';
@@ -101,6 +101,7 @@ export class D1Catalogue implements Catalogue {
         itemCount: snapshotId ? Number(s.item_count || 0) : 0,
         stale: !snapshotId || ageMs > maxDataAgeHours(this.env) * 3_600_000,
         sellerFeedbackPercent: s.seller_feedback_percent || null,
+        couponsJson: s.coupons || null,
       };
     })();
     return this.metaPromise;
@@ -207,7 +208,7 @@ export function pickVaried(items: Listing[], n: number): Listing[] {
 
 export class DemoCatalogue implements Catalogue {
   async meta(): Promise<CatalogueMeta> {
-    return { mode: 'demo', snapshotId: 'demo', lastSuccessAt: null, itemCount: DEMO_LISTINGS.length, stale: false, sellerFeedbackPercent: null };
+    return { mode: 'demo', snapshotId: 'demo', lastSuccessAt: null, itemCount: DEMO_LISTINGS.length, stale: false, sellerFeedbackPercent: null, couponsJson: null };
   }
   async search(q: CatalogueQuery) {
     const tokens = searchTokens(q.q);

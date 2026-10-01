@@ -1,5 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
-import { activeCoupon, dataMode, isProductionHost, siteOrigin, type Env } from './config';
+import { activeCoupons, dataMode, isProductionHost, siteOrigin, type Env } from './config';
 import { CatalogueUnavailable, getCatalogue, type Catalogue } from './catalogue';
 import type { RenderCtx } from './ui';
 import type { CatalogueMeta } from './types';
@@ -9,7 +9,7 @@ export interface AppContext {
   cat: Catalogue;
 }
 
-const EMPTY_META: CatalogueMeta = { mode: 'live', snapshotId: null, lastSuccessAt: null, itemCount: 0, stale: true, sellerFeedbackPercent: null };
+const EMPTY_META: CatalogueMeta = { mode: 'live', snapshotId: null, lastSuccessAt: null, itemCount: 0, stale: true, sellerFeedbackPercent: null, couponsJson: null };
 
 /** Build the per-request render context. Never throws: a broken database renders the "unavailable" states. */
 export async function appContext(request: Request, env: Env): Promise<AppContext> {
@@ -36,7 +36,7 @@ export async function appContext(request: Request, env: Env): Promise<AppContext
       path: url.pathname,
       searchQ: url.pathname === '/shop' || url.pathname.startsWith('/category/') ? (url.searchParams.get('q') || '').slice(0, 80) : '',
       indexable,
-      coupon: activeCoupon(env),
+      coupons: mode === 'live' ? activeCoupons(env, meta.couponsJson) : [],
     },
   };
 }

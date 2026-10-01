@@ -19,7 +19,7 @@ export async function itemPage(ctx: RenderCtx, cat: Catalogue, id: string, slug:
   const isDemo = ctx.meta.mode === 'demo';
   const hide = ctx.meta.stale && !isDemo;
   const category = getCategory(l.siteCategory);
-  const p = priceParts(l, hide, isDemo ? null : ctx.coupon);
+  const p = priceParts(l, hide, ctx.coupons);
   const imgs = l.images.slice(0, 12);
   const src = (u: string, size: 500 | 800 | 1600) => (isDemo ? u : ebayImage(u, size));
   const crumbs = breadcrumbs(ctx, [

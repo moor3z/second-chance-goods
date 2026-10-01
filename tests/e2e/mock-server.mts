@@ -31,7 +31,7 @@ const server = createServer(async (req, res) => {
   for await (const c of req) chunks.push(c as Buffer);
   const url = `http://127.0.0.1:9797${req.url}`;
   if (req.url === '/__fail-page-2') { failNext.page = 2; res.end('ok'); return; }
-  const m = mockEbay({ items, pageSize: 25, failPages: failNext.page ? [failNext.page] : [] });
+  const m = mockEbay({ items, pageSize: 25, failPages: failNext.page ? [failNext.page] : [], coupons: [{ code: 'SCGOODSOCT26', percent: 30, maxOff: 100, all: true, endDate: '2026-10-31T22:59:59.000Z' }] });
   const r = await m.fetch(url, { method: req.method, headers: req.headers as Record<string, string>, body: Buffer.concat(chunks).toString() });
   if (req.url?.includes('api.dll') && failNext.page && /<PageNumber>2</.test(Buffer.concat(chunks).toString())) failNext.page = 0;
   res.writeHead(r.status, Object.fromEntries(r.headers));

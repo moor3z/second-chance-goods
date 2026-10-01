@@ -12,7 +12,7 @@ import { createInterface } from 'node:readline/promises';
 import { spawn } from 'node:child_process';
 import { stdin, stdout, env, exit } from 'node:process';
 
-const SCOPE = 'https://api.ebay.com/oauth/api_scope';
+const SCOPE = 'https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/sell.marketing.readonly';
 const rl = createInterface({ input: stdin, output: stdout });
 const ask = async (q, fallback) => fallback || (await rl.question(q)).trim();
 

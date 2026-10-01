@@ -38,7 +38,7 @@ export function ebayConfig(env: Env): EbayConfig | null {
     pageSize: num(env.EBAY_PAGE_SIZE, 100, 1, 200),
     endWindowDays: num(env.EBAY_END_WINDOW_DAYS, 60, 31, 119),
     useOutputSelector: (env.EBAY_USE_OUTPUT_SELECTOR || 'true') !== 'false',
-    scopes: 'https://api.ebay.com/oauth/api_scope',
+    scopes: 'https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/sell.marketing.readonly',
   };
 }
 

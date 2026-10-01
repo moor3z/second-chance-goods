@@ -1,4 +1,4 @@
-import { ASSET_VERSION, BUSINESS, couponPrice, syncIntervalMinutes, type Coupon, type Env } from './config';
+import { ASSET_VERSION, BUSINESS, bestCoupon, syncIntervalMinutes, type Coupon, type Env } from './config';
 import { COPY } from './copy';
 import { getCategory, SITE_CATEGORIES } from './categories';
 import { ebayImage, formatDate, formatDateTime, formatMoney, formatMoneyShort, itemPath } from './format';
@@ -13,7 +13,7 @@ export interface RenderCtx {
   path: string;
   searchQ?: string;
   indexable: boolean;
-  coupon: Coupon | null;
+  coupons: Coupon[];
 }
 
 /* ----------------------------------------------------------------- icons */
@@ -44,11 +44,11 @@ export const logo = (cls = '') =>
   h`<a class="logo ${cls}" href="/" aria-label="${BUSINESS.legalName} home">${MARK}<span class="logo-words" aria-hidden="true"><span class="logo-top">Second Chance</span><span class="logo-sub">Goods Ltd</span></span></a>`;
 
 /* ----------------------------------------------------------------- listing helpers */
-export function priceParts(l: Listing, hidePrices: boolean, coupon: Coupon | null = null): { main: Safe; sub: Safe | null; coupon: Safe | null } {
+export function priceParts(l: Listing, hidePrices: boolean, coupons: Coupon[] = []): { main: Safe; sub: Safe | null; coupon: Safe | null } {
   const couponLine = (): Safe | null => {
-    if (!coupon || hidePrices || l.listingType !== 'fixed') return null;
-    const after = couponPrice(l.pricePence, coupon);
-    return after === null ? null : h`<span class="price-coupon"><strong>${formatMoney(after, l.currency)}</strong> with code ${coupon.code}</span>`;
+    if (!coupons.length || hidePrices || l.listingType !== 'fixed') return null;
+    const best = bestCoupon(coupons, l.pricePence, l.itemId);
+    return best ? h`<span class="price-coupon"><strong>${formatMoney(best.price, l.currency)}</strong> with code ${best.coupon.code}</span>` : null;
   };
   if (hidePrices) return { main: h`<span class="price-hidden">See current price on eBay</span>`, sub: null, coupon: null };
   if (l.listingType === 'auction') {
@@ -68,7 +68,7 @@ export function priceParts(l: Listing, hidePrices: boolean, coupon: Coupon | nul
 
 export function productCard(l: Listing, ctx: RenderCtx, opts: { eager?: boolean } = {}): Safe {
   const hide = ctx.meta.stale && ctx.meta.mode === 'live';
-  const p = priceParts(l, hide, ctx.coupon);
+  const p = priceParts(l, hide, ctx.coupons);
   const img = l.images[0];
   const isDemo = ctx.meta.mode === 'demo';
   return h`<article class="card">
@@ -168,8 +168,8 @@ ${liveStale ? h`<div class="notice notice-stale" role="status">Prices are being 
     </ul>
   </nav>
 </header>
-${ctx.coupon && meta.mode === 'live' && !meta.stale ? h`<div class="offer-bar" role="note"><div class="wrap offer-inner">
-  ${icons.tag}<p><strong>${ctx.coupon.percent}% off with code <span class="offer-code">${ctx.coupon.code}</span></strong> – enter it at eBay checkout.${ctx.coupon.maxOffPence ? h` Max ${formatMoneyShort(ctx.coupon.maxOffPence)} off.` : ''}${ctx.coupon.minSpendPence ? h` Items over ${formatMoneyShort(ctx.coupon.minSpendPence)}.` : ''}${ctx.coupon.ends ? h` Ends ${formatDate(ctx.coupon.ends + 'T12:00:00Z')}.` : ''} Fixed-price items only; eBay applies the discount.</p>
+${ctx.coupons.length && meta.mode === 'live' && !meta.stale ? h`<div class="offer-bar" role="note"><div class="wrap offer-inner">
+  ${icons.tag}<div>${ctx.coupons.map((c) => h`<p><strong>${c.percent ? h`${c.percent}% off` : h`${formatMoneyShort(c.amountOffPence || 0)} off`} with code <span class="offer-code">${c.code}</span></strong> – enter it at eBay checkout.${c.maxOffPence ? h` Max ${formatMoneyShort(c.maxOffPence)} off.` : ''}${c.minSpendPence ? h` Items over ${formatMoneyShort(c.minSpendPence)}.` : ''}${c.eligible !== 'all' ? h` Selected items (marked with the code).` : ''}${c.ends ? h` Ends ${formatDate(c.ends.length === 10 ? c.ends + 'T12:00:00Z' : c.ends)}.` : ''} Buy-it-now items only; eBay applies the discount.</p>`)}</div>
 </div></div>` : ''}
 <main id="main" tabindex="-1">
 ${o.main}

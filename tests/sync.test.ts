@@ -6,6 +6,7 @@ import { runSync, acquireLock, type SyncDeps } from '../sync-worker/src/sync';
 import { normaliseItem } from '../sync-worker/src/ebay';
 import { makeLogger } from '../sync-worker/src/index';
 import { D1Catalogue } from '../src/catalogue';
+import { activeCoupons } from '../src/config';
 import { mapCategory } from '../src/categories';
 import { XMLParser } from 'fast-xml-parser';
 import { itemXml } from './mock-ebay';
@@ -254,4 +255,29 @@ test('logs never contain secrets or tokens', async () => {
   const all = lines.join('\n');
   assert.ok(lines.length >= 3);
   for (const secret of [CFG.clientSecret, CFG.refreshToken, 'ACCESSTOKEN', 'TESTTOKEN']) assert.ok(!all.includes(secret), `leaked ${secret}`);
+});
+
+test('running eBay coupons are synced and shown; a missing scope is non-fatal', async () => {
+  const db = new FakeD1();
+  const { deps, logs } = setup({ items: items(3), coupons: [
+    { code: 'SCGOODSOCT26', percent: 30, maxOff: 100, all: true },
+    { code: 'FIVER', amountOff: 5, minAmount: 30, listingIds: ['117431000000'] },
+    { code: 'VIPONLY', percent: 50, all: true, type: 'PRIVATE' },
+  ] }, db);
+  const r = await runSync(deps, opts());
+  assert.equal(r.status, 'success', r.message);
+  assert.ok(logs.some((l) => l.includes('coupons_synced')), logs.join('\n'));
+  const meta = await new D1Catalogue(db as never, {}).meta();
+  const cs = activeCoupons({}, meta.couponsJson, new Date('2026-10-01T12:00:00Z'));
+  assert.deepEqual(cs.map((c) => c.code), ['SCGOODSOCT26', 'FIVER'], 'private coupon not advertised');
+  assert.equal(cs[0].maxOffPence, 10000);
+  assert.equal(cs[1].minSpendPence, 3000);
+  assert.ok(cs[1].eligible instanceof Set && cs[1].eligible.has('117431000000'));
+  // Manual settings override what eBay says.
+  assert.deepEqual(activeCoupons({ COUPON_CODE: 'manual1', COUPON_PERCENT: '5' }, meta.couponsJson).map((c) => c.code), ['MANUAL1']);
+  // No marketing scope: listings still publish, coupons just aren't updated.
+  const { deps: d2, logs: l2 } = setup({ items: items(3), marketingForbidden: true }, db);
+  const r2 = await runSync(d2, opts());
+  assert.equal(r2.status, 'success');
+  assert.ok(l2.some((l) => l.includes('coupon_lookup_failed') && l.includes('sell.marketing.readonly')));
 });

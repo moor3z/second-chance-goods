@@ -9,6 +9,7 @@ import {
   EbayError, getAccessToken, getFeedbackPercent, getSellerListPage, normaliseItem, withRetry,
   type EbayConfig, type FetchFn, type SellerListPage, type Sleep, type SkipReason,
 } from './ebay';
+import { fetchRunningCoupons } from './coupons';
 
 export interface SyncDeps {
   db: D1Database;
@@ -217,6 +218,15 @@ export async function runSync(deps: SyncDeps, opts: SyncOptions): Promise<SyncRe
       if (pct) await setState(db, 'seller_feedback_percent', pct).run();
     } catch (err) {
       log('feedback_lookup_failed', { runId, message: (err as Error).message });
+    }
+
+    // Running coded coupons, so the site can advertise them. Non-fatal; the site ignores expired entries.
+    try {
+      const coupons = await fetchRunningCoupons(deps.cfg, deps.fetch, await token(), deps.sleep);
+      await db.batch([setState(db, 'coupons', JSON.stringify(coupons)), setState(db, 'coupons_checked_at', deps.now().toISOString())]);
+      log('coupons_synced', { runId, count: coupons.length, codes: coupons.map((c) => c.code) });
+    } catch (err) {
+      log('coupon_lookup_failed', { runId, message: (err as Error).message, kind: err instanceof EbayError ? err.kind : 'unexpected' });
     }
 
     result = { status: 'success', runId, message: `Published ${listings.length} listings`, itemCount: listings.length, pages: fetched.pages, skipped };
