@@ -16,14 +16,14 @@ export const COPY = {
   hero: {
     eyebrow: 'SOURCED LOCALLY. READY TO LOVE AGAIN.',
     headline: ['Great finds.', 'Second chances.'],
-    text: 'Discover an ever-changing mix of second-hand furniture, home décor and everyday essentials. Recovered by Tidy Up Ltd across North Wales and the North West, ready for a fresh start in your home.', // CHECK
+    text: 'Discover an ever-changing mix of second-hand furniture, home décor and everyday essentials. Recovered by Tidy Up Ltd across North Wales & Cheshire, ready for a fresh start in your home.', // CHECK
     primary: 'Explore our collection',
     secondary: 'About our story',
     handwritten: 'Remarkable items. Real stories. Less waste.',
   },
   trust: [
     { icon: 'house', text: 'Pre-loved finds, sourced through house clearances.' }, // CHECK
-    { icon: 'people', text: 'Trusted across Flintshire' },
+    { icon: 'people', text: 'Trusted across North Wales & Cheshire' },
     { icon: 'leaf', text: 'A sustainable alternative to buying new' },
     { icon: 'calendar', text: 'New finds added regularly – no two the same' },
   ],
