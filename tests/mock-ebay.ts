@@ -35,7 +35,7 @@ export interface MockOptions {
   expireFirstToken?: boolean;
   rateLimit?: boolean;
   /** Running coded coupons returned by the mock Marketing API. */
-  coupons?: { code: string; percent?: number; amountOff?: number; maxOff?: number; minAmount?: number; all?: boolean; listingIds?: string[]; type?: 'PUBLIC' | 'PRIVATE'; endDate?: string }[];
+  coupons?: { code: string; percent?: number; amountOff?: number; maxOff?: number; minAmount?: number; all?: boolean; listingIds?: string[]; type?: 'PUBLIC_SINGLE_SELLER_COUPON' | 'PRIVATE_SINGLE_SELLER_COUPON'; endDate?: string }[];
   /** Simulate a token without the marketing scope. */
   marketingForbidden?: boolean;
 }
@@ -69,7 +69,7 @@ export function mockEbay(opts: MockOptions) {
       if (url.includes('get_listing_set')) return Response.json({ total: (c.listingIds || []).length, listings: (c.listingIds || []).map((id) => ({ listingId: id })) });
       return Response.json({
         name: `Coupon ${c.code}`, promotionStatus: 'RUNNING', promotionType: 'CODED_COUPON', startDate: '2026-09-01T00:00:00.000Z', endDate: c.endDate ?? '2026-10-31T22:59:59.000Z',
-        couponConfiguration: { couponCode: c.code, couponType: c.type || 'PUBLIC', maxCouponRedemptionPerUser: 1 },
+        couponConfiguration: { couponCode: c.code, couponType: c.type || 'PUBLIC_SINGLE_SELLER_COUPON', maxCouponRedemptionPerUser: 1 },
         inventoryCriterion: c.all ? { inventoryCriterionType: 'INVENTORY_ANY' } : { inventoryCriterionType: 'INVENTORY_BY_RULE' },
         discountRules: [{ discountBenefit: c.percent ? { percentageOffOrder: String(c.percent) } : { amountOffOrder: { value: String(c.amountOff), currency: 'GBP' } },
           discountSpecification: c.minAmount ? { minAmount: { value: String(c.minAmount), currency: 'GBP' } } : {}, ...(c.maxOff ? { maxDiscountAmount: { value: String(c.maxOff), currency: 'GBP' } } : {}) }],

@@ -262,7 +262,7 @@ test('running eBay coupons are synced and shown; a missing scope is non-fatal', 
   const { deps, logs } = setup({ items: items(3), coupons: [
     { code: 'SCGOODSOCT26', percent: 30, maxOff: 100, all: true },
     { code: 'FIVER', amountOff: 5, minAmount: 30, listingIds: ['117431000000'] },
-    { code: 'VIPONLY', percent: 50, all: true, type: 'PRIVATE' },
+    { code: 'VIPONLY', percent: 50, all: true, type: 'PRIVATE_SINGLE_SELLER_COUPON' },
   ] }, db);
   const r = await runSync(deps, opts());
   assert.equal(r.status, 'success', r.message);

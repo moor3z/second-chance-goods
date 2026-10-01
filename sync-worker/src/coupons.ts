@@ -76,7 +76,8 @@ export function parseCoupon(d: Json, listingIds: string[] | null): SyncedCoupon 
     starts: d.startDate ? String(d.startDate) : null,
     ends: d.endDate ? String(d.endDate) : null,
     eligible,
-    isPublic: String(d.couponConfiguration?.couponType || '').toUpperCase() === 'PUBLIC',
+    // eBay values: PUBLIC_SINGLE_SELLER_COUPON (shown on eBay) or PRIVATE_SINGLE_SELLER_COUPON (shared privately).
+    isPublic: String(d.couponConfiguration?.couponType || '').toUpperCase().startsWith('PUBLIC'),
   };
 }
 
