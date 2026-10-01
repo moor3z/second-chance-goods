@@ -1,4 +1,5 @@
 import { ASSET_VERSION, BUSINESS, syncIntervalMinutes, type Env } from './config';
+import { COPY } from './copy';
 import { getCategory, SITE_CATEGORIES } from './categories';
 import { ebayImage, formatDateTime, formatMoney, itemPath } from './format';
 import { h, jsonLd, raw, type Safe } from './html';
@@ -24,6 +25,15 @@ export const icons = {
   tag: svg('<path d="M3.5 12.3V4.6c0-.6.5-1.1 1.1-1.1h7.7l8.2 8.2a1.3 1.3 0 0 1 0 1.8l-6.9 6.9a1.3 1.3 0 0 1-1.8 0Z"/><circle cx="8.2" cy="8.2" r="1.4"/>', 'icon icon-lg'),
   bag: svg('<path d="M5 8h14l-1 12.5H6Z"/><path d="M9 10V6.5a3 3 0 0 1 6 0V10"/>', 'icon icon-lg'),
   menu: svg('<path d="M4 7h16M4 12h16M4 17h16"/>'),
+  house: svg('<path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-6h4v6"/>', 'icon icon-lg'),
+  people: svg('<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19.5c.4-3.3 2.6-5 5.5-5s5.1 1.7 5.5 5"/><circle cx="16.5" cy="9" r="2.5"/><path d="M15.5 14.4c2.8.1 4.6 1.6 5 4.6"/>', 'icon icon-lg'),
+  leaf: svg('<path d="M4.5 19.5c0-8.5 5-14 15-14-0.5 9-5.5 14-13 14"/><path d="M4.5 19.5c3-5 6-8 10-10"/>', 'icon icon-lg'),
+  calendar: svg('<rect x="3.5" y="5" width="17" height="15.5" rx="1.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M8 13h2M12 13h2M16 13h2M8 16.5h2M12 16.5h2"/>', 'icon icon-lg'),
+  shield: svg('<path d="M12 3.5 5 6v6c0 4.2 3 7.3 7 8.5 4-1.2 7-4.3 7-8.5V6Z"/><path d="m9 12 2 2 4-4"/>', 'icon icon-lg'),
+  gem: svg('<path d="M7 4h10l4 5-9 11L3 9Z"/><path d="M3 9h18M9.5 9 12 20l2.5-11M7 4l2.5 5M17 4l-2.5 5"/>', 'icon icon-lg'),
+  sparkle: svg('<path d="M12 3.5c.6 4.4 2.6 6.4 7 7-4.4.6-6.4 2.6-7 7-.6-4.4-2.6-6.4-7-7 4.4-.6 6.4-2.6 7-7Z"/><path d="M5 16.5c.3 1.5 1 2.2 2.5 2.5-1.5.3-2.2 1-2.5 2.5-.3-1.5-1-2.2-2.5-2.5 1.5-.3 2.2-1 2.5-2.5Z"/>', 'icon icon-lg'),
+  check: svg('<path d="m5 12.5 4.5 4.5L19 7.5"/>'),
+  pin: svg('<path d="M12 21s6.5-6 6.5-11.5a6.5 6.5 0 0 0-13 0C5.5 15 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.3"/>', 'icon icon-lg'),
   close: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
 };
 
@@ -79,7 +89,7 @@ export interface PageOpts {
   bodyClass?: string;
 }
 
-const NAV_CATEGORIES = ['collectables', 'home-furniture', 'vintage-antiques', 'toys-games'];
+const NAV_CATEGORIES = SITE_CATEGORIES.filter((c) => c.featured).map((c) => c.slug);
 
 export function page(ctx: RenderCtx, o: PageOpts): Response {
   const { meta, origin } = ctx;
@@ -124,17 +134,20 @@ ${(o.structuredData || []).map((d) => jsonLd(d))}
 <a class="skip-link" href="#main">Skip to content</a>
 ${meta.mode === 'demo' ? h`<div class="notice notice-demo" role="note"><strong>Demo preview.</strong> Products, prices and photos on this site are illustrative and are not real stock. Nothing here is for sale.</div>` : ''}
 ${liveStale ? h`<div class="notice notice-stale" role="status">Prices are being refreshed from eBay. Check each eBay listing for the current price and availability.</div>` : ''}
-<div class="announce"><p>Good things deserve a second chance.</p></div>
+<div class="topbar"><div class="wrap topbar-inner">
+  <a class="topbar-link" href="${COPY.topBar.url}">${icons.leaf}<span>${COPY.topBar.text}</span></a>
+  <ul class="topbar-badges" aria-label="About us">${COPY.topBar.badges.map((b) => h`<li>${icons.check}${b}</li>`)}</ul>
+</div></div>
 <header class="site-header">
   <div class="wrap header-bar">
     ${logo()}
     <form class="search" role="search" action="/shop" method="get">
       <label class="visually-hidden" for="site-search">Search the collection</label>
       ${icons.search}
-      <input id="site-search" type="search" name="q" value="${ctx.searchQ || ''}" placeholder="Search for your next great find" autocomplete="off" enterkeyhint="search">
+      <input id="site-search" type="search" name="q" value="${ctx.searchQ || ''}" placeholder="${COPY.header.searchPlaceholder}" autocomplete="off" enterkeyhint="search">
       <button class="visually-hidden" type="submit">Search</button>
     </form>
-    <a class="ebay-link" href="${BUSINESS.ebayStoreUrl}">Our eBay shop${icons.arrow}</a>
+    <a class="btn btn-small ebay-btn" href="${BUSINESS.ebayStoreUrl}">${COPY.header.ebayButton}${icons.arrow}</a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="menu-open">${icons.menu}</span><span class="menu-close">${icons.close}</span><span class="menu-label">Menu</span></button>
   </div>
   <nav class="site-nav" id="site-nav" aria-label="Main">
@@ -151,18 +164,38 @@ ${liveStale ? h`<div class="notice notice-stale" role="status">Prices are being 
 ${o.main}
 </main>
 <footer class="site-footer">
-  <div class="wrap footer-top">
-    ${logo('logo-footer')}
-    <nav aria-label="Footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      ${logo('logo-footer')}
+      <p class="handwritten handwritten-sm">${COPY.footer.tagline}</p>
+    </div>
+    <nav class="footer-col" aria-label="Shop">
+      <h2>Shop</h2>
+      <ul class="footer-links footer-links-2">
+        <li><a href="/shop">Shop all</a></li>
+        ${SITE_CATEGORIES.filter((c) => inStock.has(c.slug)).map((c) => h`<li><a href="/category/${c.slug}">${c.name}</a></li>`)}
+      </ul>
+    </nav>
+    <nav class="footer-col" aria-label="About">
+      <h2>About</h2>
       <ul class="footer-links">
-        <li><a href="/shop">Catalogue</a></li>
-        <li><a href="/about">About us</a></li>
+        <li><a href="/about">Our story</a></li>
         <li><a href="${BUSINESS.ebayStoreUrl}">Shop on eBay</a></li>
         <li><a href="${BUSINESS.ebayContactUrl}">Contact us on eBay</a></li>
+        <li><a href="${COPY.footer.partnerUrl}">${COPY.footer.partnerName}</a></li>
         <li><a href="/privacy">Privacy</a></li>
         <li><a href="/terms">Terms of use</a></li>
       </ul>
     </nav>
+    <div class="footer-col footer-partner">
+      <h2>${COPY.footer.partnerHeading}</h2>
+      <a class="partner-card" href="${COPY.footer.partnerUrl}">${icons.house}<span><strong>${COPY.footer.partnerName}</strong><small>${COPY.footer.partnerSub}</small></span></a>
+      <p>${COPY.footer.partnerText}</p>
+    </div>
+    <div class="footer-col footer-local">
+      <h2>${COPY.footer.localHeading}</h2>
+      <p class="local-line">${icons.pin}<span>${COPY.footer.localText}</span></p>
+    </div>
   </div>
   <div class="wrap footer-bottom">
     <p>All purchases are completed on eBay. Prices, delivery options and availability are confirmed on each eBay listing.</p>

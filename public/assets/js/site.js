@@ -41,4 +41,33 @@
       a.setAttribute('aria-current', 'true');
     });
   }
+
+  // Category rows: previous/next buttons for people who don't realise the row scrolls sideways.
+  document.querySelectorAll('[data-scroll-btns]').forEach(function (btns) {
+    var scroller = btns.parentElement.nextElementSibling;
+    var row = scroller && scroller.querySelector('.cat-tiles');
+    if (!row) return;
+    var prev = btns.querySelector('.scroll-prev');
+    var next = btns.querySelector('.scroll-next');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var update = function () {
+      var max = row.scrollWidth - row.clientWidth;
+      var atStart = row.scrollLeft <= 4;
+      var atEnd = row.scrollLeft >= max - 4;
+      prev.setAttribute('aria-disabled', String(atStart));
+      next.setAttribute('aria-disabled', String(atEnd));
+      scroller.classList.toggle('has-more', max > 4 && !atEnd);
+      btns.hidden = max <= 4;
+    };
+    var step = function (dir) {
+      var tile = row.querySelector('li');
+      var w = tile ? tile.getBoundingClientRect().width + 14 : row.clientWidth * 0.6;
+      row.scrollBy({ left: dir * w, behavior: reduce ? 'auto' : 'smooth' });
+    };
+    prev.addEventListener('click', function () { if (prev.getAttribute('aria-disabled') !== 'true') step(-1); });
+    next.addEventListener('click', function () { if (next.getAttribute('aria-disabled') !== 'true') step(1); });
+    row.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  });
 })();

@@ -1,4 +1,5 @@
 import { BUSINESS } from '../config';
+import { COPY } from '../copy';
 import { formatDate } from '../format';
 import { h } from '../html';
 import { icons, page, type RenderCtx } from '../ui';
@@ -7,10 +8,11 @@ export function aboutPage(ctx: RenderCtx): Response {
   const feedback = ctx.meta.sellerFeedbackPercent ? `${ctx.meta.sellerFeedbackPercent}%` : BUSINESS.verified.feedbackPercent;
   const main = h`
 <div class="wrap page-head narrow">
-  <h1 class="page-title">More character. Less waste.</h1>
+  <h1 class="page-title">${COPY.story.headline.join(' ')}</h1>
   <p class="page-intro">Second Chance Goods gives useful, unusual and much-loved things a new home.</p>
 </div>
 <div class="wrap prose">
+  <p>${COPY.story.text}</p>
   <p>We sell pre-loved furniture, collectables, vintage pieces and everyday favourites through our eBay shop. Each item has its own eBay listing with photos and a full description, and new finds are added regularly.</p>
   <h2>How buying works</h2>
   <p>This website is our catalogue. Browse and search here, then use the “View on eBay” link to see the full listing and buy. Payment, delivery, collection options and returns are handled on eBay under eBay’s terms and the details shown on each listing.</p>
