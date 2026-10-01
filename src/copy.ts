@@ -22,8 +22,8 @@ export const COPY = {
     handwritten: 'Remarkable items. Real stories. Less waste.',
   },
   trust: [
-    { icon: 'house', text: 'Sourced through professional house clearances by Tidy Up Ltd' }, // CHECK
-    { icon: 'people', text: 'Trusted across the North West and North Wales' },
+    { icon: 'house', text: 'Pre-loved finds, sourced through house clearances.' }, // CHECK
+    { icon: 'people', text: 'Trusted across Flintshire' },
     { icon: 'leaf', text: 'A sustainable alternative to buying new' },
     { icon: 'calendar', text: 'New finds added regularly – no two the same' },
   ],
