@@ -5,7 +5,7 @@
  */
 export const COPY = {
   topBar: {
-    text: 'Quality finds, carefully recovered through house clearances by Tidy Up Ltd.', // CHECK
+    text: 'Quality finds, carefully recovered by Tidy Up Ltd.', // CHECK
     url: 'https://tidyupltd.com',
     badges: ['Sustainable', 'Local', 'Trusted'],
   },
