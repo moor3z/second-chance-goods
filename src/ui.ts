@@ -38,10 +38,11 @@ export const icons = {
   close: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
 };
 
-const MARK = raw(`<svg class="logo-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="29" stroke="currentColor" stroke-width="2.6"/><path d="M3 32 A29 29 0 0 1 32 3" stroke="var(--orange)" stroke-width="2.6"/><g stroke="currentColor" stroke-width="2"><path d="M24.2 35.5 L22.6 19.2 Q22.4 16.6 25 16.2 L36.8 14.6 Q39.6 14.3 39.9 17 L41.4 33.6"/><path d="M19.6 36.4 Q19.4 33.9 21.9 33.9 L39.2 34.4 Q41.9 34.5 41.7 37.1 L41.5 38.9 Q41.3 41.1 39 41.1 L22.2 40.9 Q19.9 40.9 19.7 38.6 Z"/><path d="M17.2 29.4 Q16.4 27.6 18.3 27.4 L27.8 26.7 Q29.6 26.6 29.2 28.3"/><path d="M18.4 29.6 L20.6 33.8"/><path d="M41.2 25.2 L45 24.8 Q46.4 24.8 45.9 26.2 L44.6 29.8 L41.6 32.5"/><path d="M22.6 41 L19.2 50.6"/><path d="M38.6 41.2 L41.4 50.4"/><path d="M41.3 39.6 L45.4 47.2"/><path d="M25.8 41 L27.2 46.2"/></g></svg>`);
-
-export const logo = (cls = '') =>
-  h`<a class="logo ${cls}" href="/" aria-label="${BUSINESS.legalName} home">${MARK}<span class="logo-words" aria-hidden="true"><span class="logo-top">Second Chance</span><span class="logo-sub">Goods Ltd</span></span></a>`;
+export const logo = (cls = '') => {
+  const white = cls.includes('logo-footer');
+  const file = white ? 'logo-white' : 'logo';
+  return h`<a class="logo ${cls}" href="/"><picture><source srcset="/assets/img/${file}.webp" type="image/webp"><img src="/assets/img/${file}.png" width="1181" height="245" alt="${BUSINESS.legalName} home"></picture></a>`;
+};
 
 /* ----------------------------------------------------------------- listing helpers */
 export function priceParts(l: Listing, hidePrices: boolean, coupons: Coupon[] = []): { main: Safe; sub: Safe | null; coupon: Safe | null } {
@@ -120,8 +121,8 @@ export function page(ctx: RenderCtx, o: PageOpts): Response {
 <meta name="description" content="${o.description}">
 <meta name="robots" content="${robots}">
 ${canonical ? h`<link rel="canonical" href="${canonical}">` : ''}
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/assets/img/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/source-serif-4.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>

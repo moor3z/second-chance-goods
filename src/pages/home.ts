@@ -117,7 +117,7 @@ ${withStock.length ? h`<section class="wrap section" aria-labelledby="cats-h">
     '@type': 'Organization',
     name: BUSINESS.legalName,
     url: ctx.origin + '/',
-    logo: ctx.origin + '/assets/img/logo.svg',
+    logo: ctx.origin + '/assets/img/logo.png',
     sameAs: [BUSINESS.ebayStoreUrl],
   };
   const site = {

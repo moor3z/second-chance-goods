@@ -114,17 +114,9 @@ main:focus { outline: none; }
   padding-block: 1.1rem .9rem;
 }
 
-.logo { display: inline-flex; align-items: center; gap: .85rem; text-decoration: none; color: var(--navy); }
-.logo-mark { width: 64px; height: 64px; flex: none; }
-.logo-words { display: flex; flex-direction: column; line-height: 1; }
-.logo-top {
-  font-family: var(--wordmark); font-weight: 600; text-transform: uppercase;
-  font-size: 1.95rem; letter-spacing: .02em;
-}
-.logo-sub {
-  font-family: var(--wordmark); font-weight: 500; text-transform: uppercase;
-  font-size: .9rem; letter-spacing: .62em; margin-top: .45rem; color: var(--ink-soft);
-}
+.logo { display: inline-flex; align-items: center; text-decoration: none; line-height: 0; }
+.logo img { display: block; height: 52px; width: auto; max-width: 100%; }
+.logo-footer img { height: 44px; }
 
 .search {
   position: relative; display: flex; align-items: center;
@@ -370,10 +362,6 @@ main:focus { outline: none; }
 .site-footer { background: var(--navy); color: #d9e2e3; padding-block: 2.5rem 1.5rem; }
 .site-footer a { color: var(--white); }
 .footer-grid { display: grid; grid-template-columns: 1.3fr 1.1fr .9fr 1.1fr .9fr; gap: 2rem 2.5rem; align-items: start; }
-.footer-brand .logo { color: var(--white); }
-.footer-brand .logo-top { font-size: 1.45rem; }
-.footer-brand .logo-sub { font-size: .7rem; }
-.footer-brand .logo-sub { color: #b8c6c8; }
 .footer-col h2 { font-family: var(--sans); font-weight: 700; font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; color: var(--white); margin-bottom: .75rem; }
 .footer-col p { font-size: .9rem; color: #c4d0d2; margin: 0; }
 .footer-links.footer-links-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
@@ -385,9 +373,6 @@ main:focus { outline: none; }
 .partner-card:hover strong { text-decoration: underline; text-underline-offset: .2em; }
 .local-line { display: flex; gap: .6rem; align-items: flex-start; }
 .local-line .icon-lg { color: var(--orange); flex: none; }
-.logo-footer .logo-mark { width: 56px; height: 56px; }
-.logo-footer .logo-top { font-size: 1.7rem; }
-.logo-footer .logo-sub { font-size: .8rem; }
 .footer-links { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .footer-links a { display: inline-block; padding: .3rem 0; text-decoration: none; font-size: .9rem; color: #d9e2e3; }
 .footer-links a:hover { text-decoration: underline; text-underline-offset: .2em; }
@@ -479,8 +464,7 @@ main:focus { outline: none; }
   .footer-grid { grid-template-columns: 1fr 1fr 1fr; }
   .cta-inner { grid-template-columns: minmax(0, 1fr) auto; }
   .cta-ticks { grid-column: 1 / -1; grid-auto-flow: column; justify-content: start; gap: 1.5rem; }
-  .logo-top { font-size: 1.6rem; }
-  .logo-mark { width: 54px; height: 54px; }
+  .logo img { height: 46px; }
   .grid-4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .home .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .grid-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1.25rem 1rem; }
@@ -501,10 +485,7 @@ main:focus { outline: none; }
   .search { grid-area: search; max-width: none; }
   .ebay-link, .ebay-btn, .topbar-badges, .cat-all { display: none; }
   .topbar-inner { justify-content: center; text-align: center; font-size: .8rem; }
-  .logo-mark { width: 46px; height: 46px; }
-  .logo { gap: .6rem; }
-  .logo-top { font-size: 1.4rem; }
-  .logo-sub { font-size: .72rem; margin-top: .3rem; letter-spacing: .58em; }
+  .logo img { height: 40px; }
   .menu-toggle {
     grid-area: toggle; display: inline-flex; align-items: center; gap: .4rem;
     min-height: 2.75rem; padding: 0 .75rem; background: transparent;
@@ -569,7 +550,6 @@ main:focus { outline: none; }
   .story-tag { right: .5rem; bottom: .5rem; width: 9.5rem; font-size: 1.25rem; }
   .footer-grid { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
   .footer-links.footer-links-2 { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
-  .footer-brand .logo-top { font-size: 1.3rem; }
   .handwritten { font-size: 1.5rem; }
   .card-title { font-size: 1rem; }
 
@@ -587,8 +567,7 @@ main:focus { outline: none; }
 @media (max-width: 359px) {
   .grid-4, .home .grid-4 { grid-template-columns: 1fr; }
   .cat-tiles li { flex-basis: 68%; }
-  .logo-top { font-size: 1.2rem; }
-  .logo-sub { letter-spacing: .45em; }
+  .logo img { height: 34px; }
   .menu-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 
