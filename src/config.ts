@@ -14,10 +14,49 @@ export interface Env {
   SYNC_INTERVAL_MINUTES?: string;
   /** Allow a snapshot synced from a non-eBay endpoint (local testing only). */
   ALLOW_TEST_SOURCE?: string;
+  /** eBay coded coupon to advertise (see wrangler.toml). Leave COUPON_CODE empty for no offer. */
+  COUPON_CODE?: string;
+  COUPON_PERCENT?: string;
+  COUPON_MAX_OFF?: string;
+  COUPON_MIN_SPEND?: string;
+  COUPON_ENDS?: string;
+}
+
+export interface Coupon {
+  code: string;
+  percent: number;
+  /** Maximum discount in pence (0 = no cap). */
+  maxOffPence: number;
+  /** Minimum item price in pence for the code to apply (0 = none). */
+  minSpendPence: number;
+  /** Last day the code works, YYYY-MM-DD (UK time), or null if open-ended. */
+  ends: string | null;
+}
+
+const londonDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' });
+
+/** The coupon to advertise, or null if none is configured or it has ended. */
+export function activeCoupon(env: Env, now = new Date()): Coupon | null {
+  const code = (env.COUPON_CODE || '').trim().toUpperCase();
+  const percent = Number(env.COUPON_PERCENT);
+  if (!code || !Number.isFinite(percent) || percent <= 0 || percent >= 100) return null;
+  const ends = (env.COUPON_ENDS || '').trim();
+  if (ends && !/^\d{4}-\d{2}-\d{2}$/.test(ends)) return null;
+  if (ends && londonDate.format(now) > ends) return null;
+  const pounds = (v: string | undefined) => Math.max(0, Math.round((Number(v) || 0) * 100));
+  return { code, percent, maxOffPence: pounds(env.COUPON_MAX_OFF), minSpendPence: pounds(env.COUPON_MIN_SPEND), ends: ends || null };
+}
+
+/** Price after the coupon, in pence, or null if the code doesn't apply to this price. Matches eBay's percentage-off rounding to the penny. */
+export function couponPrice(pricePence: number, c: Coupon): number | null {
+  if (pricePence <= 0 || pricePence < c.minSpendPence) return null;
+  let off = Math.round((pricePence * c.percent) / 100);
+  if (c.maxOffPence) off = Math.min(off, c.maxOffPence);
+  return off > 0 ? pricePence - off : null;
 }
 
 /** Bump when CSS/JS change so browsers fetch the new files. */
-export const ASSET_VERSION = '2026-10-01.4';
+export const ASSET_VERSION = '2026-10-01.5';
 
 export const BUSINESS = {
   legalName: 'Second Chance Goods Ltd',

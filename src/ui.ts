@@ -1,7 +1,7 @@
-import { ASSET_VERSION, BUSINESS, syncIntervalMinutes, type Env } from './config';
+import { ASSET_VERSION, BUSINESS, couponPrice, syncIntervalMinutes, type Coupon, type Env } from './config';
 import { COPY } from './copy';
 import { getCategory, SITE_CATEGORIES } from './categories';
-import { ebayImage, formatDateTime, formatMoney, itemPath } from './format';
+import { ebayImage, formatDate, formatDateTime, formatMoney, formatMoneyShort, itemPath } from './format';
 import { h, jsonLd, raw, type Safe } from './html';
 import type { CatalogueMeta, CategoryStat, Listing } from './types';
 
@@ -13,6 +13,7 @@ export interface RenderCtx {
   path: string;
   searchQ?: string;
   indexable: boolean;
+  coupon: Coupon | null;
 }
 
 /* ----------------------------------------------------------------- icons */
@@ -43,24 +44,31 @@ export const logo = (cls = '') =>
   h`<a class="logo ${cls}" href="/" aria-label="${BUSINESS.legalName} home">${MARK}<span class="logo-words" aria-hidden="true"><span class="logo-top">Second Chance</span><span class="logo-sub">Goods Ltd</span></span></a>`;
 
 /* ----------------------------------------------------------------- listing helpers */
-export function priceParts(l: Listing, hidePrices: boolean): { main: Safe; sub: Safe | null } {
-  if (hidePrices) return { main: h`<span class="price-hidden">See current price on eBay</span>`, sub: null };
+export function priceParts(l: Listing, hidePrices: boolean, coupon: Coupon | null = null): { main: Safe; sub: Safe | null; coupon: Safe | null } {
+  const couponLine = (): Safe | null => {
+    if (!coupon || hidePrices || l.listingType !== 'fixed') return null;
+    const after = couponPrice(l.pricePence, coupon);
+    return after === null ? null : h`<span class="price-coupon"><strong>${formatMoney(after, l.currency)}</strong> with code ${coupon.code}</span>`;
+  };
+  if (hidePrices) return { main: h`<span class="price-hidden">See current price on eBay</span>`, sub: null, coupon: null };
   if (l.listingType === 'auction') {
     const bids = l.bidCount ?? 0;
     return {
       main: h`<span class="price-label">${bids > 0 ? 'Current bid' : 'Starting bid'}</span> ${formatMoney(l.pricePence, l.currency)}`,
       sub: h`${bids} ${bids === 1 ? 'bid' : 'bids'}${l.endTime ? h`, ends ${formatDateTime(l.endTime)}` : ''}`,
+      coupon: null,
     };
   }
   return {
     main: h`${formatMoney(l.pricePence, l.currency)}`,
     sub: l.bestOffer ? h`or Best Offer` : null,
+    coupon: couponLine(),
   };
 }
 
 export function productCard(l: Listing, ctx: RenderCtx, opts: { eager?: boolean } = {}): Safe {
   const hide = ctx.meta.stale && ctx.meta.mode === 'live';
-  const p = priceParts(l, hide);
+  const p = priceParts(l, hide, ctx.coupon);
   const img = l.images[0];
   const isDemo = ctx.meta.mode === 'demo';
   return h`<article class="card">
@@ -71,7 +79,7 @@ export function productCard(l: Listing, ctx: RenderCtx, opts: { eager?: boolean 
     ${l.listingType === 'auction' ? h`<span class="auction-tag">Auction</span>` : ''}
   </div>
   <h3 class="card-title"><a href="${itemPath(l)}">${l.title}</a></h3>
-  <p class="card-price">${p.main}${p.sub ? h`<span class="card-price-sub">${p.sub}</span>` : ''}</p>
+  <p class="card-price">${p.main}${p.coupon ? h`<span class="card-price-sub">${p.coupon}</span>` : ''}${p.sub ? h`<span class="card-price-sub">${p.sub}</span>` : ''}</p>
   ${l.condition ? h`<p class="card-cond">${l.condition}</p>` : ''}
   <a class="card-ebay" href="${l.url}">${isDemo ? 'Open our eBay shop' : 'View on eBay'}<span class="visually-hidden">: ${l.title}</span>${icons.arrow}</a>
 </article>`;
@@ -160,6 +168,9 @@ ${liveStale ? h`<div class="notice notice-stale" role="status">Prices are being 
     </ul>
   </nav>
 </header>
+${ctx.coupon && meta.mode === 'live' && !meta.stale ? h`<div class="offer-bar" role="note"><div class="wrap offer-inner">
+  ${icons.tag}<p><strong>${ctx.coupon.percent}% off with code <span class="offer-code">${ctx.coupon.code}</span></strong> – enter it at eBay checkout.${ctx.coupon.maxOffPence ? h` Max ${formatMoneyShort(ctx.coupon.maxOffPence)} off.` : ''}${ctx.coupon.minSpendPence ? h` Items over ${formatMoneyShort(ctx.coupon.minSpendPence)}.` : ''}${ctx.coupon.ends ? h` Ends ${formatDate(ctx.coupon.ends + 'T12:00:00Z')}.` : ''} Fixed-price items only; eBay applies the discount.</p>
+</div></div>` : ''}
 <main id="main" tabindex="-1">
 ${o.main}
 </main>

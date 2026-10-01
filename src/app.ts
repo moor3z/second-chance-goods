@@ -1,5 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
-import { dataMode, isProductionHost, siteOrigin, type Env } from './config';
+import { activeCoupon, dataMode, isProductionHost, siteOrigin, type Env } from './config';
 import { CatalogueUnavailable, getCatalogue, type Catalogue } from './catalogue';
 import type { RenderCtx } from './ui';
 import type { CatalogueMeta } from './types';
@@ -36,6 +36,7 @@ export async function appContext(request: Request, env: Env): Promise<AppContext
       path: url.pathname,
       searchQ: url.pathname === '/shop' || url.pathname.startsWith('/category/') ? (url.searchParams.get('q') || '').slice(0, 80) : '',
       indexable,
+      coupon: activeCoupon(env),
     },
   };
 }

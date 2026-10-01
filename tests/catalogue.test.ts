@@ -66,3 +66,22 @@ test('data older than six hours is flagged stale; untrusted sources are ignored'
   const allowed = await new D1Catalogue((await seeded({ source: '127.0.0.1:9999' })) as never, { ALLOW_TEST_SOURCE: '1' }).meta();
   assert.equal(allowed.snapshotId, 'snap1');
 });
+
+import { activeCoupon, couponPrice } from '../src/config';
+
+test('coupon settings: prices, cap, minimum spend and expiry', () => {
+  const env = { COUPON_CODE: 'scgoodsoct26', COUPON_PERCENT: '30', COUPON_MAX_OFF: '100', COUPON_ENDS: '2026-10-31' };
+  const c = activeCoupon(env, new Date('2026-10-01T12:00:00Z'))!;
+  assert.equal(c.code, 'SCGOODSOCT26');
+  assert.equal(couponPrice(1499, c), 1049, '£14.99 → £10.49, as eBay shows');
+  assert.equal(couponPrice(5999, c), 4199);
+  assert.equal(couponPrice(50000, c), 40000, 'capped at £100 off');
+  assert.equal(activeCoupon(env, new Date('2026-11-01T00:30:00Z')), null, 'expired after the last day (UK time)');
+  assert.ok(activeCoupon(env, new Date('2026-10-31T23:30:00Z')), 'still on during the last day');
+  assert.equal(activeCoupon({}), null);
+  assert.equal(activeCoupon({ COUPON_CODE: 'X', COUPON_PERCENT: '0' }), null);
+  assert.equal(activeCoupon({ COUPON_CODE: 'X', COUPON_PERCENT: '10', COUPON_ENDS: '31/10/2026' }), null, 'bad date format switches it off rather than running forever');
+  const min = activeCoupon({ COUPON_CODE: 'X', COUPON_PERCENT: '10', COUPON_MIN_SPEND: '20' })!;
+  assert.equal(couponPrice(1999, min), null);
+  assert.equal(couponPrice(2000, min), 1800);
+});

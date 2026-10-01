@@ -10,6 +10,10 @@ export function formatMoney(pence: number, currency = 'GBP'): string {
   return f.format(pence / 100);
 }
 
+/** Whole pounds without pence, e.g. £100; otherwise the usual £12.50. */
+export const formatMoneyShort = (pence: number, currency = 'GBP') =>
+  pence % 100 === 0 ? new Intl.NumberFormat('en-GB', { style: 'currency', currency, maximumFractionDigits: 0 }).format(pence / 100) : formatMoney(pence, currency);
+
 const dateTime = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'Europe/London', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
 });

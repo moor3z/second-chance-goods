@@ -19,7 +19,7 @@ export async function itemPage(ctx: RenderCtx, cat: Catalogue, id: string, slug:
   const isDemo = ctx.meta.mode === 'demo';
   const hide = ctx.meta.stale && !isDemo;
   const category = getCategory(l.siteCategory);
-  const p = priceParts(l, hide);
+  const p = priceParts(l, hide, isDemo ? null : ctx.coupon);
   const imgs = l.images.slice(0, 12);
   const src = (u: string, size: 500 | 800 | 1600) => (isDemo ? u : ebayImage(u, size));
   const crumbs = breadcrumbs(ctx, [
@@ -47,6 +47,7 @@ export async function itemPage(ctx: RenderCtx, cat: Catalogue, id: string, slug:
   <div class="product-info">
     <h1 class="product-title">${l.title}</h1>
     <p class="product-price">${p.main}</p>
+    ${p.coupon ? h`<p class="product-coupon">${p.coupon}<span class="coupon-how">Enter the code at eBay checkout; eBay applies the discount.</span></p>` : ''}
     ${p.sub ? h`<p class="product-price-sub">${p.sub}</p>` : ''}
     ${!hide && l.listingType === 'auction' && l.buyItNowPence ? h`<p class="product-price-sub">Buy it now: ${formatMoney(l.buyItNowPence, l.currency)}</p>` : ''}
     <dl class="facts">

@@ -162,6 +162,19 @@ main:focus { outline: none; }
 .nav-list a[aria-current="page"] { border-bottom-color: var(--orange); }
 .nav-extra { display: none; }
 
+/* ---------------------------------------------------------------- offer bar (coupon) */
+.offer-bar { background: #fff1ea; border-bottom: 1px solid #f6c9b3; color: var(--ink); }
+.offer-inner { display: flex; align-items: center; gap: .75rem; padding-block: .6rem; font-size: .95rem; }
+.offer-inner .icon { width: 22px; height: 22px; color: var(--orange); flex: none; }
+.offer-inner p { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.offer-bar strong { font-weight: 700; }
+.offer-code { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; overflow-wrap: anywhere; background: var(--white); border: 1px dashed var(--orange); border-radius: 3px; padding: 0 .4rem; letter-spacing: .04em; }
+.price-coupon { color: #1e7a3c; font-weight: 500; }
+.price-coupon strong { font-weight: 700; }
+.product-coupon { margin: 0 0 .5rem; font-size: 1.125rem; }
+.product-coupon .price-coupon strong { font-size: 1.35rem; }
+.coupon-how { display: block; font-size: .875rem; color: var(--muted); font-weight: 400; margin-top: .15rem; }
+
 /* ---------------------------------------------------------------- buttons & links */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
