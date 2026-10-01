@@ -14,9 +14,9 @@ export const COPY = {
     ebayButton: 'Visit our eBay shop',
   },
   hero: {
-    eyebrow: 'Pre-loved. Expertly sourced. A brighter tomorrow.',
+    eyebrow: 'SOURCED LOCALLY. READY TO LOVE AGAIN.',
     headline: ['Great finds.', 'Second chances.'],
-    text: 'Carefully recovered from house clearances by Tidy Up Ltd and given a new home. Discover quality furniture, collectables and everyday treasures worth finding again.', // CHECK
+    text: 'Discover an ever-changing mix of second-hand furniture, home décor and everyday essentials. Recovered by Tidy Up Ltd across North Wales and the North West, ready for a fresh start in your home.', // CHECK
     primary: 'Explore our collection',
     secondary: 'About our story',
     handwritten: 'Remarkable items. Real stories. Less waste.',
