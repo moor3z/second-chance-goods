@@ -11,6 +11,8 @@ export interface Catalogue {
   categoryStats(): Promise<CategoryStat[]>;
   featured(n: number): Promise<Listing[]>;
   sitemapItems(): Promise<Pick<Listing, 'itemId' | 'title' | 'startTime'>[]>;
+  /** Every item in the current snapshot, newest first (for feeds and staff tools). */
+  allItems(limit?: number): Promise<Listing[]>;
 }
 
 export class CatalogueUnavailable extends Error {}
@@ -175,6 +177,16 @@ export class D1Catalogue implements Catalogue {
     return pickVaried(results.map(rowToListing), n);
   }
 
+  async allItems(limit = 5000) {
+    const snap = await this.snap();
+    if (!snap) return [];
+    const { results } = await this.db
+      .prepare('SELECT * FROM items WHERE snapshot_id = ? ORDER BY start_time DESC, item_id DESC LIMIT ?')
+      .bind(snap, limit)
+      .all<ItemRow>();
+    return results.map(rowToListing);
+  }
+
   async sitemapItems() {
     const snap = await this.snap();
     if (!snap) return [];
@@ -237,5 +249,8 @@ export class DemoCatalogue implements Catalogue {
   }
   async sitemapItems() {
     return [];
+  }
+  async allItems(limit = 5000) {
+    return DEMO_LISTINGS.slice(0, limit);
   }
 }

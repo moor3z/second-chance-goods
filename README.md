@@ -111,6 +111,14 @@ buy-it-now price. Private coupons are never shown. Each coupon disappears at its
 - To force a particular offer (or show one eBay doesn't report), fill in the `COUPON_*` lines in `wrangler.toml`.
   A manual coupon overrides the automatic ones; leave `COUPON_CODE` empty for automatic.
 
+## Facebook and Marketplace
+
+- **Marketplace lister** at `/staff/marketplace` (password-protected): copy-and-paste fields for listing every item on Facebook Marketplace by hand.
+- **Catalogue feed** at `/feeds/facebook.csv` for Meta Commerce Manager (Facebook Shop, Instagram).
+- **Daily Page post** from the sync Worker, with photos of the day's new listings.
+
+Setup steps: `docs/FACEBOOK-SETUP.md`. There is no Meta API for posting to Marketplace itself, and automating it with bots breaks Meta's rules.
+
 ## Everyday changes
 
 | To change | Edit |

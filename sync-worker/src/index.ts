@@ -1,6 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 import { runSync, type SyncDeps } from './sync';
 import { realSleep, type EbayConfig } from './ebay';
+import { maybePostDailyDigest, type FacebookConfig } from './facebook';
 
 export interface Env {
   DB: D1Database;
@@ -18,6 +19,30 @@ export interface Env {
   /** Local testing only: point at a mock server. Snapshots from other hosts are ignored by the live site. */
   EBAY_TRADING_URL?: string;
   EBAY_OAUTH_URL?: string;
+  /** Facebook Page posting (optional). FB_PAGE_TOKEN is a secret; the rest are vars. */
+  FB_PAGE_ID?: string;
+  FB_PAGE_TOKEN?: string;
+  FB_GRAPH_VERSION?: string;
+  FB_POST_HOUR?: string;
+  FB_POST_MAX_ITEMS?: string;
+  SITE_URL?: string;
+  FB_POST_INTRO?: string;
+  FB_POST_OUTRO?: string;
+}
+
+function facebookConfig(env: Env): FacebookConfig | null {
+  if (!env.FB_PAGE_ID || !env.FB_PAGE_TOKEN) return null;
+  return {
+    pageId: env.FB_PAGE_ID,
+    pageToken: env.FB_PAGE_TOKEN,
+    graphVersion: env.FB_GRAPH_VERSION || 'v26.0',
+    postHour: num(env.FB_POST_HOUR, 18, 0, 23),
+    maxItems: num(env.FB_POST_MAX_ITEMS, 10, 1, 10),
+    siteUrl: env.SITE_URL || '',
+    storeUrl: 'https://www.ebay.co.uk/str/secondchancegoodsltd',
+    intro: env.FB_POST_INTRO || 'New in at Second Chance Goods – {count} fresh finds today:',
+    outro: env.FB_POST_OUTRO || 'Browse everything: {link}',
+  };
 }
 
 const num = (v: string | undefined, d: number, min: number, max: number) => {
@@ -44,7 +69,7 @@ export function ebayConfig(env: Env): EbayConfig | null {
 
 /** Structured logs with every secret value scrubbed, whatever the message contains. */
 export function makeLogger(env: Env) {
-  const secrets = [env.EBAY_CLIENT_SECRET, env.EBAY_REFRESH_TOKEN, env.SYNC_TOKEN, env.EBAY_CLIENT_ID].filter((s): s is string => !!s && s.length >= 8);
+  const secrets = [env.EBAY_CLIENT_SECRET, env.EBAY_REFRESH_TOKEN, env.SYNC_TOKEN, env.EBAY_CLIENT_ID, env.FB_PAGE_TOKEN].filter((s): s is string => !!s && s.length >= 8);
   return (event: string, data: Record<string, unknown> = {}) => {
     let line = JSON.stringify({ event, ...data });
     for (const s of secrets) line = line.split(s).join('[redacted]');
@@ -93,6 +118,14 @@ const json = (data: unknown, status = 200) =>
 export default {
   async scheduled(_event: ScheduledController, env: Env): Promise<void> {
     await sync(env, 'cron', false);
+    const fb = facebookConfig(env);
+    if (fb) {
+      try {
+        await maybePostDailyDigest(env.DB, fb, (i, init) => fetch(i, init), new Date(), makeLogger(env));
+      } catch (err) {
+        makeLogger(env)('facebook_unexpected_error', { message: (err as Error).message });
+      }
+    }
   },
 
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -106,6 +139,13 @@ export default {
     if (url.pathname === '/sync' && request.method === 'POST') {
       const result = await sync(env, 'manual', url.searchParams.get('force') === '1');
       return json(result, result.status === 'success' ? 200 : result.status === 'locked' ? 409 : 502);
+    }
+    if (url.pathname === '/facebook-post' && request.method === 'POST') {
+      const fb = facebookConfig(env);
+      if (!fb) return json({ error: 'Facebook posting is not set up (FB_PAGE_ID and FB_PAGE_TOKEN)' }, 503);
+      const preview = url.searchParams.get('preview') === '1';
+      const result = await maybePostDailyDigest(env.DB, fb, (i, init) => fetch(i, init), new Date(), makeLogger(env), { force: true, preview });
+      return json(result, result.status === 'failed' ? 502 : 200);
     }
     if (url.pathname === '/status' && request.method === 'GET') {
       const [state, runs] = await Promise.all([

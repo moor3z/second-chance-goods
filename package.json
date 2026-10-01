@@ -9,10 +9,12 @@
     "db:migrate:remote": "wrangler d1 execute scg-catalogue --remote --file=migrations/0001_init.sql",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p sync-worker/tsconfig.json --noEmit",
     "test": "node --experimental-sqlite --import tsx --test tests/*.test.ts",
-    "ebay:auth": "node scripts/ebay-auth.mjs"
+    "ebay:auth": "node scripts/ebay-auth.mjs",
+    "facebook:auth": "node scripts/facebook-auth.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260930.0",
+    "@fontsource/caveat": "^5.3.0",
     "fast-xml-parser": "^5.11.2",
     "tsx": "^4.21.0",
     "typescript": "^6.0.0",

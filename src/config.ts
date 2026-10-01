@@ -20,6 +20,8 @@ export interface Env {
   COUPON_MAX_OFF?: string;
   COUPON_MIN_SPEND?: string;
   COUPON_ENDS?: string;
+  /** Password for the private staff tools (/staff). Set as a Pages secret. */
+  STAFF_KEY?: string;
 }
 
 export interface Coupon {
@@ -117,7 +119,7 @@ export function bestCoupon(coupons: Coupon[], pricePence: number, itemId: string
 }
 
 /** Bump when CSS/JS change so browsers fetch the new files. */
-export const ASSET_VERSION = '2026-10-01.7';
+export const ASSET_VERSION = '2026-10-01.8';
 
 export const BUSINESS = {
   legalName: 'Second Chance Goods Ltd',

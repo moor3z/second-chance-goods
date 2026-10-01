@@ -51,4 +51,5 @@ const failingCatalogue: Catalogue = {
   categoryStats: async () => [],
   featured: async () => [],
   sitemapItems: async () => [],
+  allItems: async () => [],
 };

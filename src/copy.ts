@@ -62,4 +62,13 @@ export const COPY = {
     localHeading: 'We’re local',
     localText: 'Based in Flintshire, serving North Wales and the North West.', // CHECK
   },
+  marketplace: {
+    /** Text used by the private Marketplace lister. {title}, {condition} and {extra} are filled in for each item. */
+    description: 'Condition: {condition}.{extra}\n\nCollection from Flintshire, or ask about delivery. Message me with any questions.\n\nMore pre-loved finds from Second Chance Goods.', // CHECK collection area
+  },
+  facebookPost: {
+    /** Daily Page post. {count} and {link} are filled in. */
+    intro: 'New in at Second Chance Goods – {count} fresh finds today:',
+    outro: 'Browse everything: {link}',
+  },
 } as const;
