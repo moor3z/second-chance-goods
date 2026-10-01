@@ -5,7 +5,7 @@
  */
 export const COPY = {
   topBar: {
-    text: 'Part of Tidy Up Ltd – professional house clearances across the North West', // CHECK
+    text: 'Quality finds, carefully recovered through house clearances by Tidy Up Ltd.', // CHECK
     url: 'https://tidyupltd.com',
     badges: ['Sustainable', 'Local', 'Trusted'],
   },
