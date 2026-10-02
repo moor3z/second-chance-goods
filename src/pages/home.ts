@@ -1,6 +1,7 @@
 import { BUSINESS } from '../config';
 import { COPY } from '../copy';
-import { LOCAL, storeData } from '../local';
+import { FAQS, LOCAL, storeData } from '../local';
+import { formatDateTime, itemPath } from '../format';
 import { SITE_CATEGORIES } from '../categories';
 import { h, raw, type Safe } from '../html';
 import { icons, page, productCard, type RenderCtx } from '../ui';
@@ -30,8 +31,7 @@ export async function homePage(ctx: RenderCtx, cat: Catalogue): Promise<Response
 <section class="hero hero-v2">
  <div class="wrap hero-inner">
   <div class="hero-copy">
-    <p class="eyebrow">${COPY.hero.eyebrow}</p>
-    <h1>${COPY.hero.headline.map((l) => h`<span>${l}</span> `)}</h1>
+    <h1><span class="eyebrow">${COPY.hero.eyebrow}</span>${COPY.hero.headline.map((l) => h`<span>${l}</span> `)}</h1>
     <p class="lede">${COPY.hero.text}</p>
     <p class="hero-actions"><a class="btn" href="/shop">${COPY.hero.primary}${icons.arrow}</a> <a class="btn btn-outline" href="/about">${COPY.hero.secondary}</a></p>
     <p class="handwritten">${COPY.hero.handwritten}<span class="hand-underline" aria-hidden="true"></span></p>
@@ -69,7 +69,7 @@ ${withStock.length ? h`<section class="wrap section" aria-labelledby="cats-h">
   </div>
   <div class="cat-scroller" data-scroller><ul class="cat-tiles cat-tiles-6">
     ${withStock.map((c) => h`<li><a class="cat-tile" href="/category/${c.slug}">
-        <span class="cat-img"><img src="${c.cover}" alt="" width="640" height="640" loading="lazy" decoding="async"></span>
+        <span class="cat-img"><img src="${c.cover}" alt="${c.name}: ${c.coverAlt}" width="640" height="640" loading="lazy" decoding="async"></span>
         <span class="cat-name">${c.name}${icons.arrow}</span></a></li>`)}
     ${withStock.length % 6 !== 0 ? h`<li><a class="cat-tile cat-tile-all" href="/shop">
         <span class="cat-img cat-img-all">${icons.search}<strong>See everything</strong>${ctx.meta.itemCount ? h`<small>${ctx.meta.itemCount} items in stock</small>` : ''}</span>
@@ -97,9 +97,28 @@ ${withStock.length ? h`<section class="wrap section" aria-labelledby="cats-h">
     <div class="section-head-left"><h2 id="latest-h" class="section-title">${COPY.latest.heading}</h2>${hasStock && !isDemo ? h`<p class="section-sub">${COPY.latest.sub}</p>` : isDemo ? h`<p class="section-sub">Illustrative products for this demo preview.</p>` : ''}</div>
     ${hasStock ? h`<a class="text-link" href="${BUSINESS.ebayStoreUrl}">${COPY.latest.link}${icons.arrow}</a>` : ''}
   </div>
+  ${!isDemo && ctx.meta.itemCount && ctx.meta.lastSuccessAt ? h`<p class="stock-line">${ctx.meta.itemCount} items in stock · updated from eBay ${formatDateTime(ctx.meta.lastSuccessAt)}</p>` : ''}
   ${hasStock
     ? h`<div class="grid grid-6 latest-grid">${latest.map((l, i) => productCard(l, ctx, { eager: i < 2 }))}</div>`
     : h`<div class="empty"><p>New stock is on its way to the website. In the meantime, everything we have is on our eBay shop.</p><p><a class="btn" href="${BUSINESS.ebayStoreUrl}">Visit our eBay shop${icons.arrow}</a></p></div>`}
+</section>
+
+<section class="local-strip" aria-labelledby="local-h">
+  <div class="wrap local-inner">
+    ${icons.pin}
+    <div>
+      <h2 id="local-h">${COPY.local.heading}</h2>
+      <p>${COPY.local.text} Near ${LOCAL.towns.slice(0, 6).join(', ')} or ${LOCAL.towns[6]}? <a href="/flintshire">${COPY.local.link}${icons.arrow}</a></p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap section" aria-labelledby="qa-h">
+  <div class="section-head">
+    <h2 id="qa-h" class="section-title">${COPY.quickAnswers.heading}</h2>
+    <a class="text-link" href="/faq">${COPY.quickAnswers.link}${icons.arrow}</a>
+  </div>
+  <dl class="qa-grid">${FAQS.filter((f) => ['How do I buy something?', 'Can I collect an item in Flintshire?', 'Where does your stock come from?', 'Do you deliver?'].includes(f.q)).map((f) => h`<div><dt>${f.q}</dt><dd>${f.a}</dd></div>`)}</dl>
 </section>
 
 <section class="cta-band" aria-labelledby="cta-h">
@@ -127,7 +146,15 @@ ${withStock.length ? h`<section class="wrap section" aria-labelledby="cats-h">
     title: `Second-hand furniture & vintage finds in ${LOCAL.county} | ${BUSINESS.name}`,
     description: `Pre-loved furniture, collectables and vintage finds from a ${LOCAL.county} second-hand shop, rescued from house clearances. Browse here and buy on eBay.`,
     canonicalPath: '/',
-    structuredData: isDemo ? [] : [storeData(ctx.origin), site],
+    structuredData: isDemo
+      ? []
+      : [
+          storeData(ctx.origin),
+          site,
+          ...(latest.length
+            ? [{ '@context': 'https://schema.org', '@type': 'ItemList', name: 'Latest finds', itemListElement: latest.map((l, i) => ({ '@type': 'ListItem', position: i + 1, name: l.title, url: ctx.origin + itemPath(l) })) }]
+            : []),
+        ],
     main,
     bodyClass: 'home',
   });

@@ -5,7 +5,7 @@
  */
 export const COPY = {
   topBar: {
-    text: 'Quality finds, carefully recovered by Tidy Up Ltd.', // CHECK
+    text: 'Quality finds, carefully recovered through house clearances by Tidy Up Ltd.',
     url: 'https://tidyupltd.com',
     badges: ['Sustainable', 'Local', 'Trusted'],
   },
@@ -14,16 +14,16 @@ export const COPY = {
     ebayButton: 'Visit our eBay shop',
   },
   hero: {
-    eyebrow: 'SOURCED LOCALLY. READY TO LOVE AGAIN.',
+    eyebrow: 'Second-hand furniture & collectables in Flintshire',
     headline: ['Great finds.', 'Second chances.'],
-    text: 'Discover an ever-changing mix of second-hand furniture, home décor and everyday essentials. Recovered by Tidy Up Ltd across North Wales & Cheshire, ready for a fresh start in your home.', // CHECK
+    text: 'Carefully recovered from house clearances by Tidy Up Ltd and given a new home from our base in Flintshire, North Wales. Discover quality furniture, collectables and everyday treasures worth finding again.', // CHECK
     primary: 'Explore our collection',
     secondary: 'About our story',
     handwritten: 'Remarkable items. Real stories. Less waste.',
   },
   trust: [
-    { icon: 'house', text: 'Pre-loved finds, sourced through house clearances.' }, // CHECK
-    { icon: 'people', text: 'Trusted across North Wales & Cheshire' },
+    { icon: 'house', text: 'Sourced through professional house clearances by Tidy Up Ltd' }, // CHECK
+    { icon: 'people', text: 'Trusted across the North West and North Wales' },
     { icon: 'leaf', text: 'A sustainable alternative to buying new' },
     { icon: 'calendar', text: 'New finds added regularly – no two the same' },
   ],
@@ -38,6 +38,8 @@ export const COPY = {
     ],
   },
   categories: { heading: 'Shop by category', link: 'Browse the full collection' },
+  local: { heading: 'Local to Flintshire?', text: 'Collect in person if you’re nearby, or have it delivered anywhere in the UK through eBay.', link: 'Buying in Flintshire' },
+  quickAnswers: { heading: 'Quick answers', link: 'All questions and answers' },
   story: {
     eyebrow: 'The story behind our stock',
     headline: ['From house clearances', 'to new beginnings.'],
