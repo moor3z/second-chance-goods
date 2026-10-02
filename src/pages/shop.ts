@@ -1,6 +1,7 @@
 import { BUSINESS } from '../config';
 import { getCategory, SITE_CATEGORIES } from '../categories';
 import { h, type Safe } from '../html';
+import { itemPath } from '../format';
 import { breadcrumbs, icons, page, productCard, type RenderCtx } from '../ui';
 import { SORTS, type Catalogue } from '../catalogue';
 import type { CatalogueQuery } from '../types';
@@ -128,13 +129,24 @@ export async function catalogueView(ctx: RenderCtx, cat: Catalogue, q: Catalogue
   const status = failed ? 503 : 200;
   const canonicalPath = `${base}${q.page > 1 ? `?page=${q.page}` : ''}`;
   const res = page(ctx, {
-    title: category ? `${category.name}${q.page > 1 ? ` (page ${q.page})` : ''}` : q.q ? `Search: ${q.q}` : `Shop all${q.page > 1 ? ` (page ${q.page})` : ''}`,
+    title: category ? `Second-hand ${category.name.toLowerCase()}${q.page > 1 ? ` (page ${q.page})` : ''} | Flintshire` : q.q ? `Search: ${q.q}` : `Shop all second-hand finds${q.page > 1 ? ` (page ${q.page})` : ''}`,
     description: category
-      ? `${category.description} Browse pre-loved ${category.name.toLowerCase()} from Second Chance Goods and buy on eBay.`
-      : 'Browse everything currently listed by Second Chance Goods: furniture, collectables, vintage pieces and everyday favourites. Buy on eBay.',
+      ? `${category.description} From a Flintshire second-hand shop; collect locally or buy on eBay.`
+      : 'Everything currently listed by Second Chance Goods, a Flintshire second-hand shop: furniture, collectables and vintage finds. Buy on eBay.',
     canonicalPath: filtered ? base : canonicalPath,
     noindex: filtered || failed || total === 0,
-    structuredData: category ? [crumbs.data] : [],
+    structuredData: [
+      ...(category ? [crumbs.data] : []),
+      ...(result && result.items.length && !filtered
+        ? [{
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            name: category ? category.name : 'The collection',
+            numberOfItems: total,
+            itemListElement: result.items.map((l, i) => ({ '@type': 'ListItem', position: (q.page - 1) * q.pageSize + i + 1, url: ctx.origin + itemPath(l), name: l.title })),
+          }]
+        : []),
+    ],
     main,
   });
   if (status !== 200) return new Response(res.body, { status, headers: res.headers });

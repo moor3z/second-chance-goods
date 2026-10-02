@@ -1,5 +1,6 @@
 import { BUSINESS } from '../config';
 import { COPY } from '../copy';
+import { LOCAL, storeData } from '../local';
 import { SITE_CATEGORIES } from '../categories';
 import { h, raw, type Safe } from '../html';
 import { icons, page, productCard, type RenderCtx } from '../ui';
@@ -112,27 +113,21 @@ ${withStock.length ? h`<section class="wrap section" aria-labelledby="cats-h">
   </div>
 </section>`;
 
-  const org = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: BUSINESS.legalName,
-    url: ctx.origin + '/',
-    logo: ctx.origin + '/assets/img/logo.png',
-    sameAs: [BUSINESS.ebayStoreUrl],
-  };
   const site = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: BUSINESS.name,
     url: ctx.origin + '/',
+    publisher: { '@id': ctx.origin + '/#store' },
+    inLanguage: 'en-GB',
     potentialAction: { '@type': 'SearchAction', target: `${ctx.origin}/shop?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
   };
 
   return page(ctx, {
-    title: `${BUSINESS.name} | Pre-loved furniture, collectables and vintage finds`,
-    description: 'Quality pre-owned furniture, collectables and vintage finds recovered from house clearances by Tidy Up Ltd. Browse the catalogue, then buy securely on eBay.',
+    title: `Second-hand furniture & vintage finds in ${LOCAL.county} | ${BUSINESS.name}`,
+    description: `Pre-loved furniture, collectables and vintage finds from a ${LOCAL.county} second-hand shop, rescued from house clearances. Browse here and buy on eBay.`,
     canonicalPath: '/',
-    structuredData: isDemo ? [] : [org, site],
+    structuredData: isDemo ? [] : [storeData(ctx.origin), site],
     main,
     bodyClass: 'home',
   });

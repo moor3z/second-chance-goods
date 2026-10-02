@@ -82,7 +82,7 @@ export async function itemPage(ctx: RenderCtx, cat: Catalogue, id: string, slug:
         priceCurrency: l.currency,
         availability: 'https://schema.org/InStock',
         itemCondition: schemaCondition(l.condition),
-        seller: { '@type': 'Organization', name: BUSINESS.legalName },
+        seller: { '@type': 'Organization', '@id': ctx.origin + '/#store', name: BUSINESS.legalName },
       },
     });
   }
@@ -90,7 +90,7 @@ export async function itemPage(ctx: RenderCtx, cat: Catalogue, id: string, slug:
   return page(ctx, {
     title: truncate(l.title, 60),
     description: truncate(
-      `${l.title}${l.condition ? `. ${l.condition}` : ''}${hide ? '' : `. ${l.listingType === 'auction' ? 'Auction' : formatMoney(l.pricePence, l.currency)}`}. From Second Chance Goods, buy on eBay.`,
+      `${l.title}${l.condition ? `. ${l.condition}` : ''}${hide ? '' : `. ${l.listingType === 'auction' ? 'Auction' : formatMoney(l.pricePence, l.currency)}`}. From a Flintshire second-hand shop; buy on eBay.`,
       158,
     ),
     canonicalPath,

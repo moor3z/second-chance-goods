@@ -119,7 +119,7 @@ export function bestCoupon(coupons: Coupon[], pricePence: number, itemId: string
 }
 
 /** Bump when CSS/JS change so browsers fetch the new files. */
-export const ASSET_VERSION = '2026-10-01.8';
+export const ASSET_VERSION = '2026-10-01.9';
 
 export const BUSINESS = {
   legalName: 'Second Chance Goods Ltd',
@@ -128,6 +128,8 @@ export const BUSINESS = {
   ebayFeedbackUrl: 'https://www.ebay.co.uk/str/secondchancegoodsltd?_tab=feedback',
   ebayContactUrl: 'https://www.ebay.co.uk/cnt/intermediatedFAQ?requested=second_chance_goods_ltd',
   ebaySellerId: 'second_chance_goods_ltd',
+  /** Your Facebook Page address, e.g. https://www.facebook.com/yourpage (leave empty if none). */
+  facebookUrl: '',
   /**
    * Figures shown on the public eBay shop page, checked on the date below.
    * Feedback % is refreshed automatically by the sync when available; items sold is not

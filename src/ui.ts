@@ -135,6 +135,8 @@ ${canonical ? h`<link rel="canonical" href="${canonical}">` : ''}
 ${canonical ? h`<meta property="og:url" content="${canonical}">` : ''}
 <meta property="og:image" content="${ogImage}">
 <meta property="og:locale" content="en_GB">
+<meta name="geo.region" content="GB-FLN">
+<meta name="geo.placename" content="Flintshire">
 <meta name="twitter:card" content="summary_large_image">
 ${(o.structuredData || []).map((d) => jsonLd(d))}
 <script src="/assets/js/site.js?v=${ASSET_VERSION}" defer></script>
@@ -192,6 +194,8 @@ ${o.main}
       <h2>About</h2>
       <ul class="footer-links">
         <li><a href="/about">Our story</a></li>
+        <li><a href="/flintshire">Buying in Flintshire</a></li>
+        <li><a href="/faq">Questions</a></li>
         <li><a href="${BUSINESS.ebayStoreUrl}">Shop on eBay</a></li>
         <li><a href="${BUSINESS.ebayContactUrl}">Contact us on eBay</a></li>
         <li><a href="${COPY.footer.partnerUrl}">${COPY.footer.partnerName}</a></li>

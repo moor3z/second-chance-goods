@@ -13,6 +13,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     { loc: `${origin}/` },
     { loc: `${origin}/shop` },
     { loc: `${origin}/about` },
+    { loc: `${origin}/flintshire` },
+    { loc: `${origin}/faq` },
     ...stats.filter((s) => s.count > 0).map((s) => ({ loc: `${origin}/category/${s.slug}` })),
     ...items.map((i) => ({ loc: origin + itemPath(i), lastmod: i.startTime ? i.startTime.slice(0, 10) : undefined })),
   ];

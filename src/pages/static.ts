@@ -1,5 +1,6 @@
 import { BUSINESS } from '../config';
 import { COPY } from '../copy';
+import { LOCAL } from '../local';
 import { formatDate } from '../format';
 import { h } from '../html';
 import { icons, page, type RenderCtx } from '../ui';
@@ -14,6 +15,15 @@ export function aboutPage(ctx: RenderCtx): Response {
 <div class="wrap prose">
   <p>${COPY.story.text}</p>
   <p>We sell pre-loved furniture, collectables, vintage pieces and everyday favourites through our eBay shop. Each item has its own eBay listing with photos and a full description, and new finds are added regularly.</p>
+  <h2>Key facts</h2>
+  <dl class="facts key-facts">
+    <div><dt>Business</dt><dd>${BUSINESS.legalName}</dd></div>
+    <div><dt>Based in</dt><dd>${LOCAL.county}, ${LOCAL.region}</dd></div>
+    <div><dt>Sells</dt><dd>Pre-loved furniture, homeware, collectables, vintage pieces and everyday items</dd></div>
+    <div><dt>Stock from</dt><dd>House clearances carried out by Tidy Up Ltd</dd></div>
+    <div><dt>Where to buy</dt><dd><a href="${BUSINESS.ebayStoreUrl}">Our eBay shop</a>; this website is the catalogue</dd></div>
+    <div><dt>Collection</dt><dd>${LOCAL.localCollection ? `Available locally in ${LOCAL.county} on many items` : 'Ask on eBay'}</dd></div>
+  </dl>
   <h2>How buying works</h2>
   <p>This website is our catalogue. Browse and search here, then use the “View on eBay” link to see the full listing and buy. Payment, delivery, collection options and returns are handled on eBay under eBay’s terms and the details shown on each listing.</p>
   <h2>Our eBay record</h2>
@@ -22,9 +32,11 @@ export function aboutPage(ctx: RenderCtx): Response {
   <p>The quickest way to reach us about an item is through eBay’s messaging, which keeps the conversation linked to the listing.</p>
   <p class="actions"><a class="btn" href="${BUSINESS.ebayContactUrl}">Contact us on eBay${icons.arrow}</a> <a class="text-link" href="/shop">Browse the collection${icons.arrow}</a></p>
 </div>`;
+  const aboutData = { '@context': 'https://schema.org', '@type': 'AboutPage', url: ctx.origin + '/about', mainEntity: { '@id': ctx.origin + '/#store' } };
   return page(ctx, {
-    title: 'About us',
-    description: 'Second Chance Goods Ltd sells pre-loved furniture, collectables and vintage finds through eBay. Browse the catalogue here and buy on eBay.',
+    structuredData: [aboutData],
+    title: `About us | Second-hand shop in ${LOCAL.county}`,
+    description: `A ${LOCAL.county} second-hand shop selling furniture, collectables and vintage finds rescued from house clearances. Browse here and buy on eBay.`,
     canonicalPath: '/about',
     main,
   });
