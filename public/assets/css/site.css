@@ -397,6 +397,9 @@ main:focus { outline: none; }
 .prose h2 { font-family: var(--serif); font-weight: 700; font-size: 1.6rem; letter-spacing: -.015em; margin: 2rem 0 .6rem; }
 .prose a { color: var(--orange-text); text-underline-offset: .2em; }
 .prose .text-link { text-decoration: none; }
+/* Buttons inside prose keep white text (prose links are orange) */
+.prose a.btn { color: var(--white); }
+.prose a.btn.btn-outline { color: var(--orange-text); }
 
 /* filters */
 .filters {
