@@ -34,6 +34,10 @@ export const icons = {
   gem: svg('<path d="M7 4h10l4 5-9 11L3 9Z"/><path d="M3 9h18M9.5 9 12 20l2.5-11M7 4l2.5 5M17 4l-2.5 5"/>', 'icon icon-lg'),
   sparkle: svg('<path d="M12 3.5c.6 4.4 2.6 6.4 7 7-4.4.6-6.4 2.6-7 7-.6-4.4-2.6-6.4-7-7 4.4-.6 6.4-2.6 7-7Z"/><path d="M5 16.5c.3 1.5 1 2.2 2.5 2.5-1.5.3-2.2 1-2.5 2.5-.3-1.5-1-2.2-2.5-2.5 1.5-.3 2.2-1 2.5-2.5Z"/>', 'icon icon-lg'),
   check: svg('<path d="m5 12.5 4.5 4.5L19 7.5"/>'),
+  question: svg('<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1 .9-1 1.7"/><path d="M12 16.6h.01"/>'),
+  info: svg('<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>'),
+  chat: svg('<path d="M4.5 6.5h15v9h-8l-4 3.5v-3.5h-3Z"/>'),
+  grid: svg('<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>'),
   pin: svg('<path d="M12 21s6.5-6 6.5-11.5a6.5 6.5 0 0 0-13 0C5.5 15 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.3"/>', 'icon icon-lg'),
   close: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
 };
@@ -169,6 +173,21 @@ ${liveStale ? h`<div class="notice notice-stale" role="status">Prices are being 
       <li><a href="/about"${current('/about')}>About us</a></li>
       <li class="nav-extra"><a href="${BUSINESS.ebayStoreUrl}">Our eBay shop</a></li>
     </ul>
+    <div class="menu-panel">
+      <p class="menu-heading">Shop by category</p>
+      <ul class="menu-tiles">
+        ${SITE_CATEGORIES.filter((c) => inStock.has(c.slug)).map((c) => h`<li><a href="/category/${c.slug}"${current('/category/' + c.slug)}><img src="${c.cover}" alt="" width="640" height="640" loading="lazy" decoding="async"><span>${c.name}</span></a></li>`)}
+      </ul>
+      <a class="btn menu-shopall" href="/shop">${icons.grid}Shop everything${ctx.meta.itemCount ? h` (${ctx.meta.itemCount})` : ''}</a>
+      <p class="menu-heading">More</p>
+      <ul class="menu-links">
+        <li><a href="/flintshire"${current('/flintshire')}>${icons.pin}Buying in Flintshire</a></li>
+        <li><a href="/faq"${current('/faq')}>${icons.question}Questions &amp; answers</a></li>
+        <li><a href="/about"${current('/about')}>${icons.info}About us</a></li>
+        <li><a href="${BUSINESS.ebayStoreUrl}">${icons.bag}Our eBay shop</a></li>
+        <li><a href="${BUSINESS.ebayContactUrl}">${icons.chat}Contact us on eBay</a></li>
+      </ul>
+    </div>
   </nav>
 </header>
 ${ctx.coupons.length && meta.mode === 'live' && !meta.stale ? h`<div class="offer-bar" role="note"><div class="wrap offer-inner">
