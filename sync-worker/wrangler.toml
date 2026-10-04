@@ -21,6 +21,9 @@ EBAY_PAGE_SIZE = "200"            # GetSellerList allows up to 200
 EBAY_END_WINDOW_DAYS = "60"       # active listings end (or renew) within this window; eBay max is 120
 EBAY_USE_OUTPUT_SELECTOR = "true" # trims responses to the fields we use; set "false" if eBay rejects it
 MAX_DROP_RATIO = "0.5"            # refuse to publish if active items fall by more than 50% (use ?force=1 to override)
+ALERT_EMAIL_TO = "steven@tidyupltd.com"
+ALERT_EMAIL_FROM = "SCG sync <alerts@tidyupltd.com>"
+ALERT_AFTER_FAILURES = "2"
 FB_PAGE_ID = ""
 FB_POST_HOUR = "18"
 FB_POST_MAX_ITEMS = "10"
