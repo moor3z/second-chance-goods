@@ -122,3 +122,51 @@ test('Facebook message falls back to the eBay shop link without a domain', () =>
   const msg = buildMessage({ ...FB, siteUrl: '' }, [{ item_id: '1', title: 'Jug', listing_type: 'fixed', price_pence: 1200, currency: 'GBP', image_urls: '[]', start_time: null }]);
   assert.match(msg, /Browse everything: https:\/\/www\.ebay\.co\.uk\/str\/x$/);
 });
+
+import { checkSyncHealth, type AlertConfig } from '../sync-worker/src/alerts';
+
+const AL: AlertConfig = { to: 'steven@example.com', from: 'SCG <alerts@example.com>', apiKey: 're_test_key', afterFailures: 2, remindEvery: 8, statusUrl: 'https://w/status', siteUrl: '' };
+function resendMock(fail = false) {
+  const sent: { subject: string; text: string; to: string[] }[] = [];
+  const fetch = async (_url: string, init?: RequestInit) => {
+    if (fail) return new Response('nope', { status: 500 });
+    const b = JSON.parse(String(init?.body));
+    sent.push({ subject: b.subject, text: b.text, to: b.to });
+    return Response.json({ id: 'email_1' });
+  };
+  return { fetch, sent };
+}
+async function addRun(db: FakeD1, status: string, at: string, message = 'Received 2245 listings but eBay reported 2246') {
+  await db.prepare("INSERT INTO sync_runs (id, trigger, started_at, finished_at, status, message) VALUES (?, 'cron', ?, ?, ?, ?)").bind(crypto.randomUUID(), at, at, status, message).run();
+}
+
+test('sync alerts: email after 2 failures, reminder after 8 more, all-clear on recovery', async () => {
+  const db = new FakeD1();
+  await db.prepare("INSERT INTO sync_state (key, value) VALUES ('last_success_at', '2026-10-03T06:31:36Z')").run();
+  const m = resendMock();
+  await addRun(db, 'success', '2026-10-03T06:31:00Z', 'Published 2268 listings');
+  await addRun(db, 'rejected', '2026-10-03T06:45:00Z');
+  assert.equal(await checkSyncHealth(db as never, AL, m.fetch as never, () => {}), 'none', 'one failure: nothing yet');
+  await addRun(db, 'rejected', '2026-10-03T07:00:00Z');
+  assert.equal(await checkSyncHealth(db as never, AL, m.fetch as never, () => {}), 'alert');
+  assert.equal(m.sent.length, 1);
+  assert.deepEqual(m.sent[0].to, ['steven@example.com']);
+  assert.match(m.sent[0].subject, /failed 2 times in a row/);
+  assert.match(m.sent[0].text, /Received 2245 listings but eBay reported 2246/);
+  assert.match(m.sent[0].text, /Last successful sync: 3 Oct, 07:31/);
+  await addRun(db, 'failed', '2026-10-03T07:15:00Z');
+  assert.equal(await checkSyncHealth(db as never, AL, m.fetch as never, () => {}), 'none', 'no email on every failure');
+  for (let i = 0; i < 7; i++) await addRun(db, 'failed', `2026-10-03T0${8 + Math.floor(i / 4)}:${(i % 4) * 15 || '00'}:00Z`);
+  assert.equal(await checkSyncHealth(db as never, AL, m.fetch as never, () => {}), 'reminder');
+  assert.match(m.sent[1].subject, /failed 10 times/);
+  await addRun(db, 'success', '2026-10-03T10:00:00Z', 'Published 2245 listings');
+  assert.equal(await checkSyncHealth(db as never, AL, m.fetch as never, () => {}), 'recovered');
+  assert.match(m.sent[2].subject, /working again/);
+  assert.equal(await checkSyncHealth(db as never, AL, m.fetch as never, () => {}), 'none', 'quiet while healthy');
+  // A failing email service never breaks the sync.
+  const bad = resendMock(true);
+  await addRun(db, 'failed', '2026-10-03T10:15:00Z'); await addRun(db, 'failed', '2026-10-03T10:30:00Z');
+  const logs: string[] = [];
+  assert.equal(await checkSyncHealth(db as never, AL, bad.fetch as never, (e) => logs.push(e)), 'none');
+  assert.ok(logs.includes('alert_email_failed'));
+});

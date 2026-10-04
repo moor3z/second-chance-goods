@@ -119,6 +119,13 @@ buy-it-now price. Private coupons are never shown. Each coupon disappears at its
 
 Setup steps: `docs/FACEBOOK-SETUP.md`. There is no Meta API for posting to Marketplace itself, and automating it with bots breaks Meta's rules.
 
+## Sync failure alerts
+
+After `ALERT_AFTER_FAILURES` consecutive failed syncs (default 2) the Worker emails `ALERT_EMAIL_TO` with the error
+messages and what to do, reminds you every 8 further failures, and sends an all-clear when it recovers. Sent via
+Resend: set the `RESEND_API_KEY` secret and `ALERT_EMAIL_FROM` (a sender on a domain verified in Resend).
+Test it with `POST /alert-test` (same token as `/sync`).
+
 ## Everyday changes
 
 | To change | Edit |

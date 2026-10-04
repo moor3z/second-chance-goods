@@ -2,6 +2,7 @@
 import { runSync, type SyncDeps } from './sync';
 import { realSleep, type EbayConfig } from './ebay';
 import { maybePostDailyDigest, type FacebookConfig } from './facebook';
+import { checkSyncHealth, type AlertConfig } from './alerts';
 
 export interface Env {
   DB: D1Database;
@@ -28,6 +29,24 @@ export interface Env {
   SITE_URL?: string;
   FB_POST_INTRO?: string;
   FB_POST_OUTRO?: string;
+  /** Email alerts when syncing keeps failing (optional). RESEND_API_KEY is a secret; the rest are vars. */
+  RESEND_API_KEY?: string;
+  ALERT_EMAIL_TO?: string;
+  ALERT_EMAIL_FROM?: string;
+  ALERT_AFTER_FAILURES?: string;
+}
+
+function alertConfig(env: Env, request?: Request): AlertConfig | null {
+  if (!env.RESEND_API_KEY || !env.ALERT_EMAIL_TO || !env.ALERT_EMAIL_FROM) return null;
+  return {
+    to: env.ALERT_EMAIL_TO,
+    from: env.ALERT_EMAIL_FROM,
+    apiKey: env.RESEND_API_KEY,
+    afterFailures: num(env.ALERT_AFTER_FAILURES, 2, 1, 50),
+    remindEvery: 8,
+    statusUrl: request ? new URL('/status', request.url).toString() : 'the Worker /status endpoint',
+    siteUrl: env.SITE_URL || '',
+  };
 }
 
 function facebookConfig(env: Env): FacebookConfig | null {
@@ -69,7 +88,7 @@ export function ebayConfig(env: Env): EbayConfig | null {
 
 /** Structured logs with every secret value scrubbed, whatever the message contains. */
 export function makeLogger(env: Env) {
-  const secrets = [env.EBAY_CLIENT_SECRET, env.EBAY_REFRESH_TOKEN, env.SYNC_TOKEN, env.EBAY_CLIENT_ID, env.FB_PAGE_TOKEN].filter((s): s is string => !!s && s.length >= 8);
+  const secrets = [env.EBAY_CLIENT_SECRET, env.EBAY_REFRESH_TOKEN, env.SYNC_TOKEN, env.EBAY_CLIENT_ID, env.FB_PAGE_TOKEN, env.RESEND_API_KEY].filter((s): s is string => !!s && s.length >= 8);
   return (event: string, data: Record<string, unknown> = {}) => {
     let line = JSON.stringify({ event, ...data });
     for (const s of secrets) line = line.split(s).join('[redacted]');
@@ -90,18 +109,23 @@ function deps(env: Env, cfg: EbayConfig): SyncDeps {
   };
 }
 
-async function sync(env: Env, trigger: 'cron' | 'manual', force: boolean) {
+async function sync(env: Env, trigger: 'cron' | 'manual', force: boolean, request?: Request) {
   const cfg = ebayConfig(env);
   if (!cfg) {
     makeLogger(env)('sync_not_configured', { missing: ['EBAY_CLIENT_ID', 'EBAY_CLIENT_SECRET', 'EBAY_REFRESH_TOKEN'].filter((k) => !env[k as keyof Env]) });
     return { status: 'failed' as const, message: 'eBay credentials are not configured' };
   }
-  return runSync(deps(env, cfg), {
+  const result = await runSync(deps(env, cfg), {
     trigger,
     force,
     intervalMinutes: num(env.SYNC_INTERVAL_MINUTES, 30, 5, 300),
     maxDropRatio: num(env.MAX_DROP_RATIO, 0.5, 0.05, 1),
   });
+  const alerts = alertConfig(env, request);
+  if (alerts && result.status !== 'skipped' && result.status !== 'locked') {
+    await checkSyncHealth(env.DB, alerts, (i, init) => fetch(i, init), makeLogger(env));
+  }
+  return result;
 }
 
 function sameSecret(a: string, b: string): boolean {
@@ -137,7 +161,7 @@ export default {
     if (!auth.startsWith('Bearer ') || !sameSecret(auth.slice(7), env.SYNC_TOKEN)) return json({ error: 'Unauthorised' }, 401);
 
     if (url.pathname === '/sync' && request.method === 'POST') {
-      const result = await sync(env, 'manual', url.searchParams.get('force') === '1');
+      const result = await sync(env, 'manual', url.searchParams.get('force') === '1', request);
       return json(result, result.status === 'success' ? 200 : result.status === 'locked' ? 409 : 502);
     }
     if (url.pathname === '/facebook-post' && request.method === 'POST') {
@@ -146,6 +170,17 @@ export default {
       const preview = url.searchParams.get('preview') === '1';
       const result = await maybePostDailyDigest(env.DB, fb, (i, init) => fetch(i, init), new Date(), makeLogger(env), { force: true, preview });
       return json(result, result.status === 'failed' ? 502 : 200);
+    }
+    if (url.pathname === '/alert-test' && request.method === 'POST') {
+      const alerts = alertConfig(env, request);
+      if (!alerts) return json({ error: 'Alerts are not set up (RESEND_API_KEY, ALERT_EMAIL_TO, ALERT_EMAIL_FROM)' }, 503);
+      try {
+        const { sendEmail } = await import('./alerts');
+        await sendEmail(alerts, (i, init) => fetch(i, init), 'Second Chance Goods: test alert', `This is a test from the eBay sync Worker. Alerts are working.\n\nYou will be emailed after ${alerts.afterFailures} failed syncs in a row, and again when it recovers.`);
+        return json({ ok: true, sentTo: alerts.to });
+      } catch (err) {
+        return json({ error: (err as Error).message }, 502);
+      }
     }
     if (url.pathname === '/status' && request.method === 'GET') {
       const [state, runs] = await Promise.all([
