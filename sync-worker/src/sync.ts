@@ -80,17 +80,24 @@ async function fetchAllPages(deps: SyncDeps, token: () => Promise<string>): Prom
 
   const first: SellerListPage = await page(1);
   if (first.totalPages > MAX_PAGES) throw new ValidationError(`Inventory spans ${first.totalPages} pages, above the safety limit of ${MAX_PAGES}`);
+  // eBay's reported total can differ slightly from what it actually returns (e.g. a listing being edited),
+  // so small differences are tolerated; anything bigger means pages went missing.
+  const tolerance = Math.max(5, Math.ceil(first.totalEntries * 0.01));
   const raw = [...first.items];
+  let lastTotal = first.totalEntries;
   for (let n = 2; n <= first.totalPages; n++) {
     const p = await page(n);
-    if (p.totalEntries !== first.totalEntries || p.totalPages !== first.totalPages) {
+    if (Math.abs(p.totalEntries - first.totalEntries) > tolerance) {
       throw new InventoryChanged(`Listings changed during the sync (${first.totalEntries} → ${p.totalEntries})`);
     }
+    lastTotal = p.totalEntries;
     raw.push(...p.items);
   }
-  if (raw.length !== first.totalEntries) {
-    throw new ValidationError(`Received ${raw.length} listings but eBay reported ${first.totalEntries}`);
+  const expected = Math.max(first.totalEntries, lastTotal);
+  if (raw.length < expected - tolerance) {
+    throw new ValidationError(`Received ${raw.length} listings but eBay reported ${expected}`);
   }
+  if (raw.length !== expected) deps.log('count_mismatch_tolerated', { received: raw.length, reported: expected });
   return { raw, pages: Math.max(first.totalPages, 1), totalEntries: first.totalEntries };
 }
 

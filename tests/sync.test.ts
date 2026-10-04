@@ -120,22 +120,35 @@ test('rate limiting is not retried and does not change the catalogue', async () 
 
 test('an incomplete result (total mismatch) is rejected', async () => {
   const { deps, db } = setup({ items: items(5), lieAboutTotal: 5, pageSize: 2 });
-  // Deliver 5 items but claim 9 in total: pages 1-3 have items, 4-5 are empty.
-  const { deps: d2 } = setup({ items: items(5), lieAboutTotal: 9 }, db);
+  // Deliver 5 items but claim 20 in total: later pages come back empty.
+  const { deps: d2 } = setup({ items: items(5), lieAboutTotal: 20 }, db);
   const r = await runSync(d2, opts());
   assert.equal(r.status, 'rejected');
-  assert.match(r.message, /Received 5 listings but eBay reported 9/);
+  assert.match(r.message, /Received 5 listings but eBay reported 20/);
   assert.equal(await count(db), 0);
   void deps;
 });
 
-test('listings changing mid-sync trigger one clean retry', async () => {
-  const { deps, calls } = setup({ items: items(6), shiftTotalOnPage: 2 });
+test('listings changing mid-sync trigger one clean retry; small drifts are tolerated', async () => {
+  const { deps, calls } = setup({ items: items(6), shiftTotalOnPage: 2, shiftBy: 50 });
   const r = await runSync(deps, opts());
-  // The mock shifts the total on every request for page 2, so both attempts fail and nothing is published.
+  // The mock shifts the total by 50 on every request for page 2, so both attempts fail and nothing is published.
   assert.equal(r.status, 'failed');
   assert.match(r.message, /changed during the sync/);
   assert.equal(calls.filter((c) => c.page === 1).length, 2);
+  // A one-item drift (someone lists during the sync) is tolerated.
+  const ok = await runSync(setup({ items: items(6), shiftTotalOnPage: 2, shiftBy: 1 }).deps, opts());
+  assert.equal(ok.status, 'success', ok.message);
+});
+
+test("eBay's total being slightly higher than the items it returns is tolerated (known eBay quirk)", async () => {
+  const { deps, logs } = setup({ items: items(40), lieAboutTotal: 41, pageSize: 20 });
+  const r = await runSync(deps, opts());
+  assert.equal(r.status, 'success', r.message);
+  assert.equal(r.itemCount, 40);
+  assert.ok(logs.some((l) => l.includes('count_mismatch_tolerated')));
+  const big = await runSync(setup({ items: items(40), lieAboutTotal: 60, pageSize: 20 }).deps, opts());
+  assert.equal(big.status, 'rejected', 'a real shortfall is still refused');
 });
 
 test('a big drop in active listings is refused unless forced', async () => {

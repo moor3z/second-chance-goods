@@ -28,6 +28,8 @@ export interface MockOptions {
   flakyPage?: { page: number; times: number };
   /** Change the reported total on this page (simulates listings added mid-sync). */
   shiftTotalOnPage?: number;
+  /** How much shiftTotalOnPage shifts by (default 1). */
+  shiftBy?: number;
   /** Report a total that doesn't match the items delivered. */
   lieAboutTotal?: number;
   tokenError?: 'invalid_grant' | 'http500';
@@ -91,7 +93,7 @@ export function mockEbay(opts: MockOptions) {
       flaky.times--;
       return new Response('unavailable', { status: 503 });
     }
-    const total = opts.lieAboutTotal ?? opts.items.length + (opts.shiftTotalOnPage === page ? 1 : 0);
+    const total = opts.lieAboutTotal ?? opts.items.length + (opts.shiftTotalOnPage === page ? opts.shiftBy ?? 1 : 0);
     const pages = Math.max(1, Math.ceil(total / pageSize));
     const slice = opts.items.slice((page - 1) * pageSize, page * pageSize);
     return xml(
