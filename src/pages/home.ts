@@ -92,6 +92,17 @@ ${withStock.length ? h`<section class="wrap section" aria-labelledby="cats-h">
   </div>
 </section>
 
+<section class="bulky-band" aria-labelledby="bulky-h">
+  <div class="wrap bulky-inner">
+    <div class="bulky-icon">${icons.van}</div>
+    <div class="bulky-copy">
+      <h2 id="bulky-h">${COPY.bulky.heading}</h2>
+      <p>${COPY.bulky.text}</p>
+    </div>
+    <p class="bulky-action"><a class="btn" href="${COPY.bulky.url}" rel="noopener">${COPY.bulky.link}${icons.arrow}</a></p>
+  </div>
+</section>
+
 <section class="wrap section" aria-labelledby="latest-h">
   <div class="section-head">
     <div class="section-head-left"><h2 id="latest-h" class="section-title">${COPY.latest.heading}</h2>${hasStock && !isDemo ? h`<p class="section-sub">${COPY.latest.sub}</p>` : isDemo ? h`<p class="section-sub">Illustrative products for this demo preview.</p>` : ''}</div>
@@ -103,21 +114,12 @@ ${withStock.length ? h`<section class="wrap section" aria-labelledby="cats-h">
     : h`<div class="empty"><p>New stock is on its way to the website. In the meantime, everything we have is on our eBay shop.</p><p><a class="btn" href="${BUSINESS.ebayStoreUrl}">Visit our eBay shop${icons.arrow}</a></p></div>`}
 </section>
 
-<section class="local-strip" aria-label="Collection and delivery">
-  <div class="wrap local-grid">
-    <div class="local-inner">
-      ${icons.pin}
-      <div>
-        <h2 id="local-h">${COPY.local.heading}</h2>
-        <p>${COPY.local.text} Near ${LOCAL.towns.slice(0, 6).join(', ')} or ${LOCAL.towns[6]}? <a href="/flintshire">${COPY.local.link}${icons.arrow}</a></p>
-      </div>
-    </div>
-    <div class="local-inner">
-      ${icons.van}
-      <div>
-        <h2>${COPY.bulky.heading}</h2>
-        <p>${COPY.bulky.text} <a href="${COPY.bulky.url}" rel="noopener">${COPY.bulky.link}${icons.arrow}</a></p>
-      </div>
+<section class="local-strip" aria-labelledby="local-h">
+  <div class="wrap local-inner">
+    ${icons.pin}
+    <div>
+      <h2 id="local-h">${COPY.local.heading}</h2>
+      <p>${COPY.local.text} Near ${LOCAL.towns.slice(0, 6).join(', ')} or ${LOCAL.towns[6]}? <a href="/flintshire">${COPY.local.link}${icons.arrow}</a></p>
     </div>
   </div>
 </section>
