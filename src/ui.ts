@@ -109,6 +109,7 @@ export function page(ctx: RenderCtx, o: PageOpts): Response {
   const inStock = new Set(ctx.stats.filter((s) => s.count > 0).map((s) => s.slug));
   const navCats = NAV_CATEGORIES.filter((c) => inStock.has(c)).map((c) => getCategory(c)!);
   const moreCats = SITE_CATEGORIES.filter((c) => inStock.has(c.slug) && !NAV_CATEGORIES.includes(c.slug));
+  const menuCats = SITE_CATEGORIES.filter((c) => inStock.has(c.slug));
   const robots = o.noindex || !ctx.indexable ? 'noindex, follow' : 'index, follow';
   const canonical = o.canonicalPath === null ? null : origin + (o.canonicalPath ?? ctx.path);
   const fullTitle = o.title.includes(BUSINESS.name) ? o.title : `${o.title} | ${BUSINESS.name}`;
@@ -176,9 +177,10 @@ ${liveStale ? h`<div class="notice notice-stale" role="status">Prices are being 
     <div class="menu-panel">
       <p class="menu-heading">Shop by category</p>
       <ul class="menu-tiles">
-        ${SITE_CATEGORIES.filter((c) => inStock.has(c.slug)).map((c) => h`<li><a href="/category/${c.slug}"${current('/category/' + c.slug)}><img src="${c.cover}" alt="" width="640" height="640" loading="lazy" decoding="async"><span>${c.name}</span></a></li>`)}
+        ${menuCats.map((c) => h`<li><a href="/category/${c.slug}"${current('/category/' + c.slug)}><img src="${c.cover}" alt="" width="640" height="640" loading="lazy" decoding="async"><span>${c.name}</span></a></li>`)}
+        ${menuCats.length % 2 === 1 ? h`<li><a class="menu-tile-all" href="/shop">${icons.grid}<span>Shop everything${ctx.meta.itemCount ? h`<small>${ctx.meta.itemCount} items</small>` : ''}</span></a></li>` : ''}
       </ul>
-      <a class="btn menu-shopall" href="/shop">${icons.grid}Shop everything${ctx.meta.itemCount ? h` (${ctx.meta.itemCount})` : ''}</a>
+      ${menuCats.length % 2 === 0 ? h`<a class="btn menu-shopall" href="/shop">${icons.grid}Shop everything${ctx.meta.itemCount ? h` (${ctx.meta.itemCount})` : ''}</a>` : ''}
       <p class="menu-heading">More</p>
       <ul class="menu-links">
         <li><a href="/flintshire"${current('/flintshire')}>${icons.pin}Buying in Flintshire</a></li>

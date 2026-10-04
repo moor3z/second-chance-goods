@@ -573,6 +573,9 @@ main:focus { outline: none; }
     background: var(--white); border: 1px solid #efe7da; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: .95rem; line-height: 1.2;
   }
   .menu-tiles a[aria-current="page"] { border-color: var(--orange); }
+  .menu-tiles .menu-tile-all { background: var(--orange); border-color: var(--orange); color: var(--white); font-size: 1rem; }
+  .menu-tiles .menu-tile-all .icon { width: 2rem; height: 2rem; margin: 0 .25rem 0 .5rem; flex: none; }
+  .menu-tiles .menu-tile-all small { display: block; font-size: .8rem; font-weight: 500; opacity: .9; }
   .menu-tiles img { width: 3rem; height: 3rem; object-fit: cover; border-radius: 4px; flex: none; background: var(--surface); }
   .menu-links { list-style: none; margin: 0; padding: 0; background: var(--white); border: 1px solid #efe7da; border-radius: 6px; }
   .menu-links li + li { border-top: 1px solid #efe7da; }
