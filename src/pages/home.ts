@@ -103,12 +103,21 @@ ${withStock.length ? h`<section class="wrap section" aria-labelledby="cats-h">
     : h`<div class="empty"><p>New stock is on its way to the website. In the meantime, everything we have is on our eBay shop.</p><p><a class="btn" href="${BUSINESS.ebayStoreUrl}">Visit our eBay shop${icons.arrow}</a></p></div>`}
 </section>
 
-<section class="local-strip" aria-labelledby="local-h">
-  <div class="wrap local-inner">
-    ${icons.pin}
-    <div>
-      <h2 id="local-h">${COPY.local.heading}</h2>
-      <p>${COPY.local.text} Near ${LOCAL.towns.slice(0, 6).join(', ')} or ${LOCAL.towns[6]}? <a href="/flintshire">${COPY.local.link}${icons.arrow}</a></p>
+<section class="local-strip" aria-label="Collection and delivery">
+  <div class="wrap local-grid">
+    <div class="local-inner">
+      ${icons.pin}
+      <div>
+        <h2 id="local-h">${COPY.local.heading}</h2>
+        <p>${COPY.local.text} Near ${LOCAL.towns.slice(0, 6).join(', ')} or ${LOCAL.towns[6]}? <a href="/flintshire">${COPY.local.link}${icons.arrow}</a></p>
+      </div>
+    </div>
+    <div class="local-inner">
+      ${icons.van}
+      <div>
+        <h2>${COPY.bulky.heading}</h2>
+        <p>${COPY.bulky.text} <a href="${COPY.bulky.url}" rel="noopener">${COPY.bulky.link}${icons.arrow}</a></p>
+      </div>
     </div>
   </div>
 </section>

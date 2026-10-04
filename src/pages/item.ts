@@ -1,4 +1,5 @@
 import { BUSINESS } from '../config';
+import { COPY } from '../copy';
 import { getCategory } from '../categories';
 import { ebayImage, formatDateTime, formatMoney, itemPath, schemaCondition, truncate } from '../format';
 import { h } from '../html';
@@ -59,6 +60,7 @@ export async function itemPage(ctx: RenderCtx, cat: Catalogue, id: string, slug:
     <p><a class="btn btn-wide" href="${l.url}">${isDemo ? 'Open our eBay shop' : l.listingType === 'auction' ? 'Bid on eBay' : 'View and buy on eBay'}${icons.arrow}</a></p>
     <div class="product-note">
       <p>Photos, the full description, postage, collection options and returns are on the eBay listing. eBay handles payment and has the final say on price and availability.</p>
+      ${['home-furniture', 'other'].includes(l.siteCategory) ? h`<p>${COPY.bulky.heading} ${COPY.bulky.text} <a href="${COPY.bulky.url}" rel="noopener">${COPY.bulky.link}</a>.</p>` : ''}
       ${isDemo ? h`<p><strong>Demo preview:</strong> this is an illustrative product, not real stock.</p>`
         : ctx.meta.lastSuccessAt ? h`<p>Details last checked against eBay ${formatDateTime(ctx.meta.lastSuccessAt)}.</p>` : ''}
     </div>

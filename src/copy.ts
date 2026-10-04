@@ -40,6 +40,12 @@ export const COPY = {
   categories: { heading: 'Shop by category', link: 'Browse the full collection' },
   local: { heading: 'Local to Flintshire?', text: 'Collect in person if you’re nearby, or have it delivered anywhere in the UK through eBay.', link: 'Buying in Flintshire' },
   quickAnswers: { heading: 'Quick answers', link: 'All questions and answers' },
+  bulky: {
+    heading: 'Large or bulky item?',
+    text: 'Seen something big that we don’t offer delivery on? AnyVan’s furniture couriers can collect it from us and deliver it to you. Use their calculator to get a delivery price.',
+    link: 'Get a delivery price on AnyVan',
+    url: 'https://www.anyvan.com/courier-services/furniture-couriers',
+  },
   story: {
     eyebrow: 'The story behind our stock',
     headline: ['From house clearances', 'to new beginnings.'],

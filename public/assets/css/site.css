@@ -461,6 +461,7 @@ main:focus { outline: none; }
 /* ---------------------------------------------------------------- homepage local strip + quick answers */
 .stock-line { color: var(--muted); font-size: .9rem; margin: -.5rem 0 1.25rem; }
 .local-strip { background: var(--surface); border-block: 1px solid var(--line); margin-top: clamp(2.5rem, 5vw, 4rem); }
+.local-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 3rem; }
 .local-inner { display: flex; gap: 1rem; align-items: flex-start; padding-block: 1.5rem; }
 .local-inner .icon-lg { flex: none; margin-top: .15rem; }
 .local-inner h2 { font-family: var(--serif); font-size: 1.4rem; margin-bottom: .3rem; }
@@ -626,6 +627,8 @@ main:focus { outline: none; }
   .grid-4, .home .grid-4, .grid-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .why-grid { grid-template-columns: minmax(0, 1fr); }
   .qa-grid { grid-template-columns: minmax(0, 1fr); }
+  .local-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .local-inner + .local-inner { border-top: 1px solid var(--line); }
   .assure-4 { grid-template-columns: 1fr; }
   .assure-4 li:nth-child(3) { border-left: 0; border-top: 1px solid #c9d0cf; }
   .section-tag { display: none; }

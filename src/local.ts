@@ -31,7 +31,7 @@ export const FAQS: Faq[] = [
   { q: 'Where are you based?', a: `We are based in ${LOCAL.county}, North Wales, close to Chester and the Wirral. We sell to buyers across the UK through eBay.` }, // CHECK
   { q: 'How do I buy something?', a: 'Find the item on this website and tap “View on eBay”. You buy it on eBay, which handles payment, delivery and buyer protection.' },
   { q: 'Can I collect an item in Flintshire?', a: LOCAL.collectionText },
-  { q: 'Do you deliver?', a: LOCAL.deliveryText },
+  { q: 'Do you deliver?', a: LOCAL.deliveryText + ' For large or bulky items we don’t offer delivery on, AnyVan’s furniture couriers can collect from us; their website calculator gives a delivery price.' },
   { q: 'Where does your stock come from?', a: LOCAL.sourceText },
   { q: 'How often do you add new items?', a: 'New finds are listed regularly, and this website updates automatically from our eBay shop about every 15 minutes.' },
   { q: 'Do you accept returns?', a: 'Returns are handled on eBay under eBay’s rules and the return policy shown on each listing.' },

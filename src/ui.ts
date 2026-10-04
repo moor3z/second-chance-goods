@@ -36,6 +36,7 @@ export const icons = {
   check: svg('<path d="m5 12.5 4.5 4.5L19 7.5"/>'),
   question: svg('<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1 .9-1 1.7"/><path d="M12 16.6h.01"/>'),
   info: svg('<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>'),
+  van: svg('<path d="M3.5 7.5h11v9h-11zM14.5 10h3.2l2.8 3v3.5h-6z"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/>', 'icon icon-lg'),
   chat: svg('<path d="M4.5 6.5h15v9h-8l-4 3.5v-3.5h-3Z"/>'),
   chevron: svg('<path d="m9 5 7 7-7 7"/>', 'icon icon-chevron'),
   grid: svg('<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>'),
