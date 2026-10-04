@@ -49,7 +49,7 @@ export function storeData(origin: string) {
     alternateName: BUSINESS.name,
     url: origin + '/',
     logo: origin + '/assets/img/logo.png',
-    image: origin + '/assets/img/hero.webp',
+    image: origin + '/assets/img/hero-lamps.webp',
     description: `Second-hand shop based in ${LOCAL.county}, ${LOCAL.region}, selling pre-loved furniture, homeware, collectables and vintage finds through eBay. ${LOCAL.sourceText}`,
     address: { '@type': 'PostalAddress', addressRegion: LOCAL.county, addressCountry: LOCAL.country },
     areaServed: LOCAL.areaServed.map((name) => ({ '@type': name === 'United Kingdom' ? 'Country' : 'AdministrativeArea', name })),

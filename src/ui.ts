@@ -115,7 +115,7 @@ export function page(ctx: RenderCtx, o: PageOpts): Response {
   const robots = o.noindex || !ctx.indexable ? 'noindex, follow' : 'index, follow';
   const canonical = o.canonicalPath === null ? null : origin + (o.canonicalPath ?? ctx.path);
   const fullTitle = o.title.includes(BUSINESS.name) ? o.title : `${o.title} | ${BUSINESS.name}`;
-  const ogImage = o.ogImage || `${origin}/assets/img/hero.webp`;
+  const ogImage = o.ogImage || `${origin}/assets/img/hero-lamps.webp`;
   const current = (href: string) => (ctx.path === href || (href !== '/' && ctx.path.startsWith(href + '/')) ? raw(' aria-current="page"') : '');
   const liveStale = meta.mode === 'live' && meta.stale && meta.snapshotId;
 

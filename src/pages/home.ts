@@ -38,8 +38,8 @@ export async function homePage(ctx: RenderCtx, cat: Catalogue): Promise<Response
   </div>
   <div class="hero-media">
     <picture>
-      <source media="(max-width: 760px)" srcset="/assets/img/hero-sm.webp">
-      <img src="/assets/img/hero.webp" width="1800" height="1200" alt="Two Tiffany-style stained-glass lamps on a polished sideboard with a vintage clock, brass urns, a railway plate and a Sony record player" fetchpriority="high">
+      <source media="(max-width: 760px)" srcset="/assets/img/hero-lamps-sm.webp">
+      <img src="/assets/img/hero-lamps.webp" width="1800" height="1200" alt="Two Tiffany-style stained-glass lamps on a polished sideboard with a vintage clock, brass urns, a railway plate and a Sony record player" fetchpriority="high">
     </picture>
   </div>
  </div>
@@ -86,9 +86,12 @@ ${withStock.length ? h`<section class="wrap section" aria-labelledby="cats-h">
       <p><a class="btn" href="/about">${COPY.story.button}${icons.arrow}</a></p>
     </div>
     <div class="about-media story-media">
-      <img src="/assets/img/about.webp" width="932" height="418" alt="Old natural history books, a trailing plant and a speckled stoneware jug on a wooden table" loading="lazy" decoding="async">
-      <div class="story-tag" aria-hidden="true">${COPY.story.tag.map((l) => h`<span>${l}</span>`)}</div>
+      <picture>
+        <source media="(max-width: 860px)" srcset="/assets/img/story-register-sm.webp">
+        <img src="/assets/img/story-register.webp" width="1600" height="1000" alt="A worn brass vintage cash register with ivory number keys on a wooden counter" loading="lazy" decoding="async">
+      </picture>
     </div>
+    <div class="story-tag" aria-hidden="true">${COPY.story.tag.map((l) => h`<span>${l}</span>`)}</div>
   </div>
 </section>
 
