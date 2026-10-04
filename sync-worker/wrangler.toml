@@ -17,7 +17,7 @@ database_id = "ce08ccdf-c519-4646-a13d-9f1871d7d2e5"
 SYNC_INTERVAL_MINUTES = "15"
 EBAY_SITE_ID = "3"                # 3 = eBay UK
 EBAY_COMPAT_LEVEL = "1451"
-EBAY_PAGE_SIZE = "100"            # GetSellerList allows up to 200
+EBAY_PAGE_SIZE = "200"            # GetSellerList allows up to 200
 EBAY_END_WINDOW_DAYS = "60"       # active listings end (or renew) within this window; eBay max is 120
 EBAY_USE_OUTPUT_SELECTOR = "true" # trims responses to the fields we use; set "false" if eBay rejects it
 MAX_DROP_RATIO = "0.5"            # refuse to publish if active items fall by more than 50% (use ?force=1 to override)
