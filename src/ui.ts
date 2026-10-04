@@ -37,6 +37,7 @@ export const icons = {
   question: svg('<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1 .9-1 1.7"/><path d="M12 16.6h.01"/>'),
   info: svg('<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>'),
   chat: svg('<path d="M4.5 6.5h15v9h-8l-4 3.5v-3.5h-3Z"/>'),
+  chevron: svg('<path d="m9 5 7 7-7 7"/>', 'icon icon-chevron'),
   grid: svg('<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>'),
   pin: svg('<path d="M12 21s6.5-6 6.5-11.5a6.5 6.5 0 0 0-13 0C5.5 15 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.3"/>', 'icon icon-lg'),
   close: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
@@ -177,17 +178,17 @@ ${liveStale ? h`<div class="notice notice-stale" role="status">Prices are being 
     <div class="menu-panel">
       <p class="menu-heading">Shop by category</p>
       <ul class="menu-tiles">
-        ${menuCats.map((c) => h`<li><a href="/category/${c.slug}"${current('/category/' + c.slug)}><img src="${c.cover}" alt="" width="640" height="640" loading="lazy" decoding="async"><span>${c.name}</span></a></li>`)}
-        ${menuCats.length % 2 === 1 ? h`<li><a class="menu-tile-all" href="/shop">${icons.grid}<span>Shop everything${ctx.meta.itemCount ? h`<small>${ctx.meta.itemCount} items</small>` : ''}</span></a></li>` : ''}
+        ${menuCats.map((c) => h`<li><a href="/category/${c.slug}"${current('/category/' + c.slug)}><img src="${c.cover}" alt="" width="640" height="640" loading="lazy" decoding="async"><span>${c.name}</span>${icons.chevron}</a></li>`)}
+        ${menuCats.length % 2 === 1 ? h`<li><a class="menu-tile-all" href="/shop">${icons.grid}<span>Shop everything${ctx.meta.itemCount ? h`<small>${ctx.meta.itemCount} items</small>` : ''}</span>${icons.chevron}</a></li>` : ''}
       </ul>
       ${menuCats.length % 2 === 0 ? h`<a class="btn menu-shopall" href="/shop">${icons.grid}Shop everything${ctx.meta.itemCount ? h` (${ctx.meta.itemCount})` : ''}</a>` : ''}
       <p class="menu-heading">More</p>
       <ul class="menu-links">
-        <li><a href="/flintshire"${current('/flintshire')}>${icons.pin}Buying in Flintshire</a></li>
-        <li><a href="/faq"${current('/faq')}>${icons.question}Questions &amp; answers</a></li>
-        <li><a href="/about"${current('/about')}>${icons.info}About us</a></li>
-        <li><a href="${BUSINESS.ebayStoreUrl}">${icons.bag}Our eBay shop</a></li>
-        <li><a href="${BUSINESS.ebayContactUrl}">${icons.chat}Contact us on eBay</a></li>
+        <li><a href="/flintshire"${current('/flintshire')}>${icons.pin}<span>Buying in Flintshire</span>${icons.chevron}</a></li>
+        <li><a href="/faq"${current('/faq')}>${icons.question}<span>Questions &amp; answers</span>${icons.chevron}</a></li>
+        <li><a href="/about"${current('/about')}>${icons.info}<span>About us</span>${icons.chevron}</a></li>
+        <li><a href="${BUSINESS.ebayStoreUrl}">${icons.bag}<span>Our eBay shop</span>${icons.chevron}</a></li>
+        <li><a href="${BUSINESS.ebayContactUrl}">${icons.chat}<span>Contact us on eBay</span>${icons.chevron}</a></li>
       </ul>
     </div>
   </nav>
