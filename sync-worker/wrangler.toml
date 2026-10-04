@@ -25,7 +25,7 @@ FB_PAGE_ID = ""
 FB_POST_HOUR = "18"
 FB_POST_MAX_ITEMS = "10"
 FB_GRAPH_VERSION = "v26.0"
-SITE_URL = ""
+SITE_URL = "https://www.secondchancegoodsltd.co.uk"
 
 [observability]
 enabled = true
