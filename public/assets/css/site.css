@@ -640,9 +640,9 @@ main:focus { outline: none; }
   .grid-4, .home .grid-4, .grid-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .why-grid { grid-template-columns: minmax(0, 1fr); }
   .qa-grid { grid-template-columns: minmax(0, 1fr); }
-  .bulky-inner { grid-template-columns: auto minmax(0, 1fr); gap: 1rem; border-radius: 0; margin-inline: calc(-1 * var(--gutter)); padding: 1.5rem var(--gutter); border-left-width: 0; border-top: 6px solid var(--orange); }
-  .bulky-icon { width: 3.25rem; height: 3.25rem; }
-  .bulky-icon .icon-lg { width: 28px; height: 28px; }
+  .bulky-inner { grid-template-columns: auto minmax(0, 1fr); gap: 1rem; padding: 1.25rem 1.1rem 1.25rem 1.25rem; }
+  .bulky-icon { width: 3rem; height: 3rem; }
+  .bulky-icon .icon-lg { width: 26px; height: 26px; }
   .bulky-action { grid-column: 1 / -1; }
   .bulky-action .btn { white-space: normal; text-align: center; }
   .assure-4 { grid-template-columns: 1fr; }
