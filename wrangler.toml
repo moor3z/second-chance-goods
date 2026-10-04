@@ -12,9 +12,9 @@ database_id = "ce08ccdf-c519-4646-a13d-9f1871d7d2e5"
 [vars]
 DATA_MODE = "live"
 # Your real domain once connected (no trailing slash). Leave as-is until you have one.
-SITE_URL = ""
+SITE_URL = "https://www.secondchancegoodsltd.co.uk"
 # Hostnames allowed to be indexed by search engines; demo mode is refused on these.
-PRODUCTION_HOSTS = ""
+PRODUCTION_HOSTS = "www.secondchancegoodsltd.co.uk"
 MAX_DATA_AGE_HOURS = "6"
 SYNC_INTERVAL_MINUTES = "15"
 
