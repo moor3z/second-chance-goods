@@ -39,7 +39,7 @@ export async function homePage(ctx: RenderCtx, cat: Catalogue): Promise<Response
   <div class="hero-media">
     <picture>
       <source media="(max-width: 760px)" srcset="/assets/img/hero-sm.webp">
-      <img src="/assets/img/hero.webp" width="1032" height="812" alt="A wooden sideboard styled with a vintage radio, glass and ceramic vases, a brass lamp and a row of records" fetchpriority="high">
+      <img src="/assets/img/hero.webp" width="1800" height="1200" alt="Two Tiffany-style stained-glass lamps on a polished sideboard with a vintage clock, brass urns, a railway plate and a Sony record player" fetchpriority="high">
     </picture>
   </div>
  </div>
