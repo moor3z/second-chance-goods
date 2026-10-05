@@ -215,7 +215,7 @@ ${o.main}
       ${logo('logo-footer')}
       <p class="handwritten handwritten-sm">${COPY.footer.tagline}</p>
       <p class="local-line">${icons.pin}<span>${COPY.footer.localText}</span></p>
-      <p class="footer-partner-line">${COPY.footer.partnerHeading} <a href="${COPY.footer.partnerUrl}">${COPY.footer.partnerName}</a> – ${COPY.footer.partnerSub.toLowerCase()} across Flintshire, North Wales and the North West.</p>
+      <p class="footer-partner-line">${COPY.footer.partnerHeading} <a href="${COPY.footer.partnerUrl}">${COPY.footer.partnerName}</a> and <a href="${COPY.footer.partner2Url}">${COPY.footer.partner2Name}</a> – ${COPY.footer.partnerSub.toLowerCase()} across Flintshire, North Wales and the North West.</p>
     </div>
     <nav class="footer-col" aria-label="Shop">
       <h2>Shop</h2>
@@ -230,6 +230,8 @@ ${o.main}
         <li><a href="/about">Our story</a></li>
         <li><a href="/flintshire">Buying in Flintshire</a></li>
         <li><a href="/faq">Questions &amp; answers</a></li>
+        <li><a href="${COPY.footer.partnerUrl}">Tidy Up Ltd house clearances</a></li>
+        <li><a href="${COPY.footer.partner2Url}">HouseClear house clearances</a></li>
         <li><a href="${COPY.bulky.url}" rel="noopener">Bulky item delivery (AnyVan)</a></li>
         <li><a href="/privacy">Privacy</a></li>
         <li><a href="/terms">Terms of use</a></li>

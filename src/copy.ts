@@ -5,7 +5,7 @@
  */
 export const COPY = {
   topBar: {
-    text: 'Quality finds, carefully recovered through house clearances by Tidy Up Ltd.',
+    text: 'Quality finds, carefully recovered through house clearances by Tidy Up Ltd and HouseClear.',
     url: 'https://tidyupltd.com',
     badges: ['Sustainable', 'Local', 'Trusted'],
   },
@@ -16,13 +16,13 @@ export const COPY = {
   hero: {
     eyebrow: 'Second-hand furniture & collectables in Flintshire',
     headline: ['Great finds.', 'Second chances.'],
-    text: 'Carefully recovered from house clearances by Tidy Up Ltd and given a new home from our base in Flintshire, North Wales. Discover quality furniture, collectables and everyday treasures worth finding again.', // CHECK
+    text: 'Carefully recovered from house clearances by Tidy Up Ltd and HouseClear, and given a new home from our base in Flintshire, North Wales. Discover quality furniture, collectables and everyday treasures worth finding again.', // CHECK
     primary: 'Explore our collection',
     secondary: 'About our story',
     handwritten: 'Remarkable items. Real stories. Less waste.',
   },
   trust: [
-    { icon: 'house', text: 'Sourced through professional house clearances by Tidy Up Ltd' }, // CHECK
+    { icon: 'house', text: 'Sourced through professional house clearances by Tidy Up Ltd and HouseClear' }, // CHECK
     { icon: 'people', text: 'Trusted across the North West and North Wales' },
     { icon: 'leaf', text: 'A sustainable alternative to buying new' },
     { icon: 'calendar', text: 'New finds added regularly – no two the same' },
@@ -31,7 +31,7 @@ export const COPY = {
     heading: 'Why buy from us?',
     tagline: 'Good things deserve a second chance.',
     cards: [
-      { icon: 'shield', title: 'Trusted provenance', text: 'All items are recovered through professional house clearances by Tidy Up Ltd.' }, // CHECK
+      { icon: 'shield', title: 'Trusted provenance', text: 'All items are recovered through professional house clearances by Tidy Up Ltd and HouseClear.' }, // CHECK
       { icon: 'leaf', title: 'Better for the planet', text: 'Giving quality items a second life helps reduce waste and supports a more sustainable future.' },
       { icon: 'gem', title: 'Carefully selected', text: 'We sort, clean and photograph every item, so you get quality pre-owned goods ready for their next chapter.' }, // CHECK
       { icon: 'sparkle', title: 'Unique, one-off finds', text: 'From mid-century furniture to retro collectables, our stock is always changing and full of unique pieces.' },
@@ -49,7 +49,7 @@ export const COPY = {
   story: {
     eyebrow: 'The story behind our stock',
     headline: ['From house clearances', 'to new beginnings.'],
-    text: 'Every item we sell is carefully recovered through professional house clearances by Tidy Up Ltd. Instead of going to waste, these quality pieces are cleaned, photographed and given a second chance to be loved again.', // CHECK
+    text: 'Every item we sell is carefully recovered through professional house clearances by Tidy Up Ltd and HouseClear. Instead of going to waste, these quality pieces are cleaned, photographed and given a second chance to be loved again.', // CHECK
     button: 'Our story',
     tag: ['Rescued.', 'Rehomed.', 'A second chance.'],
   },
@@ -67,12 +67,18 @@ export const COPY = {
     partnerSub: 'House clearances',
     partnerText: 'Professional, reliable house clearances across Flintshire, North Wales and the wider North West.', // CHECK
     partnerUrl: 'https://tidyupltd.com',
+    partner2Name: 'HouseClear',
+    partner2Url: 'https://houseclear.uk',
     localHeading: 'We’re local',
     localText: 'Based in Flintshire, serving North Wales and the North West.', // CHECK
   },
   marketplace: {
     /** Text used by the private Marketplace lister. {title}, {condition} and {extra} are filled in for each item. */
     description: 'Condition: {condition}.{extra}\n\nCollection from Flintshire, or ask about delivery. Message me with any questions.\n\nMore pre-loved finds from Second Chance Goods.', // CHECK collection area
+  },
+  vinted: {
+    /** Text used by the private Vinted lister. {condition} and {extra} are filled in for each item. */
+    description: 'Condition: {condition}.{extra}\n\nPre-loved and ready for a new home. Message me with any questions before buying.\n\nPosted via Vinted shipping. More pre-loved finds in my wardrobe.', // CHECK
   },
   facebookPost: {
     /** Daily Page post. {count} and {link} are filled in. */

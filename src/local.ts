@@ -17,7 +17,7 @@ export const LOCAL = {
   localCollection: true, // CHECK: local buyers can collect items
   collectionText: 'Local collection from Flintshire is available on many items; arrange it through eBay messages after buying, or check the listing.', // CHECK
   deliveryText: 'Delivery options and costs are shown on each eBay listing. Most smaller items are posted anywhere in the UK.', // CHECK
-  sourceText: 'Our stock is recovered through professional house clearances carried out by Tidy Up Ltd, so items have been rescued rather than thrown away.', // CHECK
+  sourceText: 'Our stock is recovered through professional house clearances carried out by Tidy Up Ltd and HouseClear, so items have been rescued rather than thrown away.', // CHECK
 };
 
 export interface Faq {

@@ -20,7 +20,7 @@ export function aboutPage(ctx: RenderCtx): Response {
     <div><dt>Business</dt><dd>${BUSINESS.legalName}</dd></div>
     <div><dt>Based in</dt><dd>${LOCAL.county}, ${LOCAL.region}</dd></div>
     <div><dt>Sells</dt><dd>Pre-loved furniture, homeware, collectables, vintage pieces and everyday items</dd></div>
-    <div><dt>Stock from</dt><dd>House clearances carried out by Tidy Up Ltd</dd></div>
+    <div><dt>Stock from</dt><dd>House clearances carried out by <a href="https://tidyupltd.com">Tidy Up Ltd</a> and <a href="https://houseclear.uk">HouseClear</a></dd></div>
     <div><dt>Where to buy</dt><dd><a href="${BUSINESS.ebayStoreUrl}">Our eBay shop</a>; this website is the catalogue</dd></div>
     <div><dt>Collection</dt><dd>${LOCAL.localCollection ? `Available locally in ${LOCAL.county} on many items` : 'Ask on eBay'}</dd></div>
   </dl>
