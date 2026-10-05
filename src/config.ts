@@ -22,6 +22,10 @@ export interface Env {
   COUPON_ENDS?: string;
   /** Password for the private staff tools (/staff). Set as a Pages secret. */
   STAFF_KEY?: string;
+  /** Address of the sync Worker, so staff tools can ask it to post to Facebook. */
+  SYNC_WORKER_URL?: string;
+  /** Same value as the Worker's SYNC_TOKEN. Set as a Pages secret. */
+  SYNC_TOKEN?: string;
 }
 
 export interface Coupon {
@@ -119,7 +123,7 @@ export function bestCoupon(coupons: Coupon[], pricePence: number, itemId: string
 }
 
 /** Bump when CSS/JS change so browsers fetch the new files. */
-export const ASSET_VERSION = '2026-10-05.4';
+export const ASSET_VERSION = '2026-10-05.5';
 
 export const BUSINESS = {
   legalName: 'Second Chance Goods Ltd',

@@ -15,6 +15,10 @@ when done; the ticks are remembered on that device only.
 
 **When something sells locally, end the eBay listing straight away.** The website updates itself.
 
+The **Vinted** tab (`/staff/vinted`) works the same way with Vinted-style categories, conditions and
+description, showing only the categories that suit Vinted. Add `?all=1` to the address to see every item.
+Ticks are kept separately for Marketplace and Vinted. Sell on Vinted through a Vinted Pro account.
+
 ## 2. Facebook Shop catalogue (automatic)
 
 The site publishes your stock as a product feed at `https://<your site>/feeds/facebook.csv`
@@ -44,6 +48,13 @@ on days with no new stock.
    (App settings → Basic) and the Explorer token. It saves the Page token to the Worker.
 5. In GitHub, edit `sync-worker/wrangler.toml`: set `FB_PAGE_ID` to the number the script printed.
    Optionally set `SITE_URL` to your domain so posts link to the website. Commit.
+
+### Post a single item from the lister
+Each item in `/staff/marketplace` (and the Vinted tab) has **Post to Facebook Page**: it pre-fills the text
+(title, price, condition, link) with up to four photos; edit if you like, then post. Posted items are marked
+and the daily digest skips them. To enable the button on the website project:
+- `SYNC_WORKER_URL = "https://scg-ebay-sync.<you>.workers.dev"` in the top-level `wrangler.toml`
+- the `SYNC_TOKEN` secret on the **website** project (same value as on the Worker)
 
 Preview the next post without sending it:
 `curl.exe -X POST -H "Authorization: Bearer YOUR_SYNC_TOKEN" "https://scg-ebay-sync.<you>.workers.dev/facebook-post?preview=1"`

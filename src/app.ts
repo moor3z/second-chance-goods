@@ -52,4 +52,5 @@ const failingCatalogue: Catalogue = {
   featured: async () => [],
   sitemapItems: async () => [],
   allItems: async () => [],
+  stateValue: async () => null,
 };

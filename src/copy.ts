@@ -84,5 +84,7 @@ export const COPY = {
     /** Daily Page post. {count} and {link} are filled in. */
     intro: 'New in at Second Chance Goods – {count} fresh finds today:',
     outro: 'Browse everything: {link}',
+    /** Single-item post from the staff lister. {title}, {price}, {condition} and {link} are filled in. */
+    item: 'Just in: {title}\n\n{price} · {condition}\n\nSee it here: {link}',
   },
 } as const;

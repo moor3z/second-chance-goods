@@ -4,7 +4,7 @@ import { FakeD1 } from './d1-shim';
 import { writeSnapshot } from '../sync-worker/src/sync';
 import { maybePostDailyDigest, buildMessage, type FacebookConfig } from '../sync-worker/src/facebook';
 import { buildCsv, metaCondition } from '../src/feeds';
-import { fbCondition, marketplaceDescription } from '../src/pages/staff';
+import { fbCondition, marketplaceDescription, vintedCondition, vintedDescription, VINTED_CATEGORIES } from '../src/pages/staff';
 import { checkKey, isStaff, loginCookie } from '../src/staff';
 import type { Listing } from '../src/types';
 
@@ -37,6 +37,16 @@ test('Marketplace lister helpers: condition mapping and description', () => {
   const d = marketplaceDescription(L('1', 'Lamp', 1000, '2026-10-01T00:00:00Z', { condition: 'For parts or not working' }));
   assert.match(d, /Condition: For parts or not working\. Sold as seen for spares or repair\./);
   assert.match(d, /Collection from Flintshire/);
+});
+
+test('Vinted lister helpers: condition mapping, description, category filter', () => {
+  assert.equal(vintedCondition('New with tags'), 'New with tags');
+  assert.equal(vintedCondition('New'), 'New without tags');
+  assert.equal(vintedCondition('Pre-owned'), 'Good');
+  assert.equal(vintedCondition('Used - Excellent'), 'Very good');
+  assert.match(vintedCondition('For parts or not working'), /Satisfactory/);
+  assert.match(vintedDescription(L('1', 'Bag', 1000, '2026-10-01T00:00:00Z', { condition: 'Pre-owned' })), /Condition: Pre-owned\.\n\nPre-loved/);
+  assert.ok(VINTED_CATEGORIES.includes('fashion-jewellery') && !VINTED_CATEGORIES.includes('tools-diy'));
 });
 
 test('staff sign-in: right password works, wrong one and missing key do not', async () => {
@@ -169,4 +179,29 @@ test('sync alerts: email after 2 failures, reminder after 8 more, all-clear on r
   const logs: string[] = [];
   assert.equal(await checkSyncHealth(db as never, AL, bad.fetch as never, (e) => logs.push(e)), 'none');
   assert.ok(logs.includes('alert_email_failed'));
+});
+
+import { postSingleItem, postedItems } from '../sync-worker/src/facebook';
+import { itemPostMessage } from '../src/facebook-message';
+
+test('single-item Facebook post: default text, photos, posted record, digest skips it', async () => {
+  const db = await dbWithItems();
+  const m = fbMock();
+  const now = at('2026-10-05T10:00:00Z');
+  const msg = itemPostMessage(L('101', 'Vintage radio', 4500, '2026-10-01T09:00:00Z'), 'https://www.example.co.uk');
+  assert.match(msg, /^Just in: Vintage radio\n\n£45\.00 · Used\n\nSee it here: https:\/\/www\.example\.co\.uk\/item\/101\/vintage-radio$/);
+  const r = await postSingleItem(db as never, FB, m.fetch as never, '101', msg, now, noLog);
+  assert.equal(r.status, 'posted');
+  assert.equal((r as { permalink: string }).permalink, 'https://www.facebook.com/1234_999');
+  assert.equal(m.calls.filter((c) => c.url.endsWith('/photos')).length, 2, 'both photos attached');
+  assert.equal(m.calls.find((c) => c.url.endsWith('/feed'))!.body.get('message'), msg);
+  assert.equal((await postedItems(db as never))['101'], now.toISOString());
+  assert.equal((await postSingleItem(db as never, FB, m.fetch as never, '101', null, now, noLog)).status, 'already_posted');
+  assert.equal((await postSingleItem(db as never, FB, m.fetch as never, '101', null, now, noLog, { force: true })).status, 'posted');
+  assert.equal((await postSingleItem(db as never, FB, m.fetch as never, '999999', null, now, noLog)).status, 'not_found');
+  // The daily digest leaves out items posted individually.
+  const d = await maybePostDailyDigest(db as never, FB, m.fetch as never, at('2026-10-01T17:05:00Z'), noLog);
+  assert.equal(d.status, 'posted');
+  const feedMsg = m.calls.filter((c) => c.url.endsWith('/feed')).pop()!.body.get('message')!;
+  assert.ok(feedMsg.includes('Toy car') && !feedMsg.includes('Vintage radio'));
 });

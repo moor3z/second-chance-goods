@@ -1,7 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 import { runSync, type SyncDeps } from './sync';
 import { realSleep, type EbayConfig } from './ebay';
-import { maybePostDailyDigest, type FacebookConfig } from './facebook';
+import { maybePostDailyDigest, postSingleItem, type FacebookConfig } from './facebook';
 import { checkSyncHealth, type AlertConfig } from './alerts';
 
 export interface Env {
@@ -170,6 +170,15 @@ export default {
       const preview = url.searchParams.get('preview') === '1';
       const result = await maybePostDailyDigest(env.DB, fb, (i, init) => fetch(i, init), new Date(), makeLogger(env), { force: true, preview });
       return json(result, result.status === 'failed' ? 502 : 200);
+    }
+    if (url.pathname === '/facebook-post-item' && request.method === 'POST') {
+      const fb = facebookConfig(env);
+      if (!fb) return json({ status: 'failed', message: 'Facebook posting is not set up yet (FB_PAGE_ID and FB_PAGE_TOKEN)' }, 503);
+      const body = (await request.json().catch(() => ({}))) as { itemId?: string; message?: string; force?: boolean };
+      const itemId = String(body.itemId || '').trim();
+      if (!/^\d{6,20}$/.test(itemId)) return json({ status: 'failed', message: 'itemId missing' }, 400);
+      const result = await postSingleItem(env.DB, fb, (i, init) => fetch(i, init), itemId, typeof body.message === 'string' ? body.message.slice(0, 5000) : null, new Date(), makeLogger(env), { force: !!body.force });
+      return json(result, result.status === 'posted' ? 200 : result.status === 'failed' ? 502 : 409);
     }
     if (url.pathname === '/alert-test' && request.method === 'POST') {
       const alerts = alertConfig(env, request);

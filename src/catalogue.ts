@@ -13,6 +13,8 @@ export interface Catalogue {
   sitemapItems(): Promise<Pick<Listing, 'itemId' | 'title' | 'startTime'>[]>;
   /** Every item in the current snapshot, newest first (for feeds and staff tools). */
   allItems(limit?: number): Promise<Listing[]>;
+  /** A raw sync_state value (staff tools), or null. */
+  stateValue(key: string): Promise<string | null>;
 }
 
 export class CatalogueUnavailable extends Error {}
@@ -187,6 +189,11 @@ export class D1Catalogue implements Catalogue {
     return results.map(rowToListing);
   }
 
+  async stateValue(key: string) {
+    const row = await this.db.prepare('SELECT value FROM sync_state WHERE key = ?').bind(key).first<{ value: string }>();
+    return row ? row.value : null;
+  }
+
   async sitemapItems() {
     const snap = await this.snap();
     if (!snap) return [];
@@ -252,5 +259,8 @@ export class DemoCatalogue implements Catalogue {
   }
   async allItems(limit = 5000) {
     return DEMO_LISTINGS.slice(0, limit);
+  }
+  async stateValue() {
+    return null;
   }
 }

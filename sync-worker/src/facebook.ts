@@ -57,6 +57,72 @@ const firstImage = (json: string): string | null => {
   }
 };
 
+const POSTED_KEY = 'fb_posted_items';
+
+/** Map of eBay item ID → ISO time it was posted individually (kept to the last 3000). */
+export async function postedItems(db: D1Database): Promise<Record<string, string>> {
+  const row = await db.prepare('SELECT value FROM sync_state WHERE key = ?').bind(POSTED_KEY).first<{ value: string }>();
+  try {
+    const v = row ? JSON.parse(row.value) : {};
+    return v && typeof v === 'object' ? (v as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
+}
+
+async function markPosted(db: D1Database, itemId: string, when: Date): Promise<void> {
+  const map = await postedItems(db);
+  map[itemId] = when.toISOString();
+  const trimmed = Object.fromEntries(Object.entries(map).sort((a, b) => b[1].localeCompare(a[1])).slice(0, 3000));
+  await db.prepare("INSERT INTO sync_state (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(POSTED_KEY, JSON.stringify(trimmed)).run();
+}
+
+export type ItemPostResult = { status: 'posted'; postId: string; permalink: string } | { status: 'failed'; message: string } | { status: 'not_found' } | { status: 'already_posted'; at: string };
+
+/** Post one listing to the Page: the given message (or a default) plus up to four of its photos. */
+export async function postSingleItem(db: D1Database, cfg: FacebookConfig, fetchFn: FetchFn, itemId: string, message: string | null, now: Date, log: (e: string, d?: Record<string, unknown>) => void, opts: { force?: boolean } = {}): Promise<ItemPostResult> {
+  const st = await db.prepare("SELECT value FROM sync_state WHERE key = 'current_snapshot'").first<{ value: string }>();
+  if (!st) return { status: 'not_found' };
+  const row = await db
+    .prepare('SELECT item_id, title, listing_type, price_pence, currency, image_urls, start_time, condition_name, listing_url FROM items WHERE snapshot_id = ? AND item_id = ?')
+    .bind(st.value, itemId)
+    .first<Row & { condition_name: string | null; listing_url: string }>();
+  if (!row) return { status: 'not_found' };
+  const posted = await postedItems(db);
+  if (posted[itemId] && !opts.force) return { status: 'already_posted', at: posted[itemId] };
+
+  const text = (message || '').trim() || buildMessage(cfg, [row]);
+  let images: string[] = [];
+  try {
+    images = (JSON.parse(row.image_urls) as string[]).filter((u) => typeof u === 'string' && u.startsWith('https://')).slice(0, 4).map((u) => u.replace(/\/s-l\d+\.(jpg|jpeg|png|webp)$/i, '/s-l1600.$1'));
+  } catch {
+    images = [];
+  }
+  try {
+    const mediaIds: string[] = [];
+    for (const url of images) {
+      try {
+        const r = await graph(cfg, fetchFn, `${cfg.pageId}/photos`, { url, published: 'false' });
+        if (r.id) mediaIds.push(String(r.id));
+      } catch (err) {
+        if (err instanceof FacebookError && err.code === 190) throw err;
+        log('facebook_photo_skipped', { url, message: (err as Error).message });
+      }
+    }
+    const params: Record<string, string> = { message: text };
+    mediaIds.forEach((id, i) => (params[`attached_media[${i}]`] = JSON.stringify({ media_fbid: id })));
+    const post = await graph(cfg, fetchFn, `${cfg.pageId}/feed`, params);
+    const postId = String(post.id);
+    await markPosted(db, itemId, now);
+    log('facebook_item_posted', { itemId, postId, photos: mediaIds.length });
+    return { status: 'posted', postId, permalink: `https://www.facebook.com/${postId}` };
+  } catch (err) {
+    const msg = (err as Error).message;
+    log('facebook_item_post_failed', { itemId, message: msg });
+    return { status: 'failed', message: msg };
+  }
+}
+
 export type FacebookResult = { status: 'posted'; postId: string; count: number } | { status: 'skipped'; reason: string } | { status: 'failed'; message: string } | { status: 'preview'; message: string; images: string[] };
 
 /**
@@ -77,11 +143,14 @@ export async function maybePostDailyDigest(db: D1Database, cfg: FacebookConfig, 
 
   // New since the last post (or the last 24 hours the first time).
   const since = st.fb_last_post_at || new Date(now.getTime() - 86_400_000).toISOString();
-  const { results: rows } = await db
+  let { results: rows } = await db
     .prepare("SELECT item_id, title, listing_type, price_pence, currency, image_urls, start_time FROM items WHERE snapshot_id = ? AND start_time > ? AND image_urls != '[]' ORDER BY start_time DESC LIMIT ?")
     .bind(st.current_snapshot, since, cfg.maxItems)
     .all<Row>();
-  if (!rows.length) return { status: 'skipped', reason: 'no new listings since the last post' };
+  const already = await postedItems(db);
+  const fresh = rows.filter((r) => !already[r.item_id]);
+  if (!fresh.length) return { status: 'skipped', reason: rows.length ? 'all new listings were already posted individually' : 'no new listings since the last post' };
+  rows = fresh;
 
   const message = buildMessage(cfg, rows);
   const images = rows.map((r) => firstImage(r.image_urls)).filter((u): u is string => !!u).slice(0, 10);
