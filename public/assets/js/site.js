@@ -25,6 +25,18 @@
     });
   }
 
+  // Desktop "Categories" dropdown
+  var megaBtn = document.querySelector('.nav-btn[aria-controls="mega-cats"]');
+  var mega = document.getElementById('mega-cats');
+  if (megaBtn && mega) {
+    var li = megaBtn.parentElement;
+    var setMega = function (open) { megaBtn.setAttribute('aria-expanded', String(open)); li.classList.toggle('is-open', open); };
+    megaBtn.addEventListener('click', function () { setMega(megaBtn.getAttribute('aria-expanded') !== 'true'); });
+    document.addEventListener('click', function (e) { if (!li.contains(e.target)) setMega(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && li.classList.contains('is-open')) { setMega(false); megaBtn.focus(); } });
+    li.addEventListener('focusout', function (e) { if (!li.contains(e.relatedTarget)) setMega(false); });
+  }
+
   // Product gallery: thumbnails swap the main photo instead of opening the full-size file.
   var gallery = document.querySelector('[data-gallery]');
   if (gallery) {

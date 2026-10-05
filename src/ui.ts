@@ -39,6 +39,7 @@ export const icons = {
   van: svg('<path d="M3.5 7.5h11v9h-11zM14.5 10h3.2l2.8 3v3.5h-6z"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/>', 'icon icon-lg'),
   chat: svg('<path d="M4.5 6.5h15v9h-8l-4 3.5v-3.5h-3Z"/>'),
   chevron: svg('<path d="m9 5 7 7-7 7"/>', 'icon icon-chevron'),
+  chevronDown: svg('<path d="m6 9 6 6 6-6"/>', 'icon icon-chevron-down'),
   grid: svg('<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>'),
   pin: svg('<path d="M12 21s6.5-6 6.5-11.5a6.5 6.5 0 0 0-13 0C5.5 15 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.3"/>', 'icon icon-lg'),
   close: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
@@ -171,10 +172,18 @@ ${liveStale ? h`<div class="notice notice-stale" role="status">Prices are being 
   <nav class="site-nav" id="site-nav" aria-label="Main">
     <ul class="wrap nav-list">
       <li><a href="/shop"${current('/shop')}>Shop all</a></li>
-      ${navCats.map((c) => h`<li><a href="/category/${c.slug}"${current('/category/' + c.slug)}>${c.name}</a></li>`)}
-      ${moreCats.map((c) => h`<li class="nav-extra"><a href="/category/${c.slug}"${current('/category/' + c.slug)}>${c.name}</a></li>`)}
+      <li class="has-mega">
+        <button class="nav-btn" type="button" aria-expanded="false" aria-controls="mega-cats">Categories${icons.chevronDown}</button>
+        <div class="mega" id="mega-cats">
+          <ul class="mega-tiles">
+            ${menuCats.map((c) => h`<li><a href="/category/${c.slug}"${current('/category/' + c.slug)}><img src="${c.cover}" alt="" width="640" height="640" decoding="async" fetchpriority="low"><span>${c.name}</span></a></li>`)}
+            <li><a class="mega-all" href="/shop">${icons.grid}<span>Shop everything${ctx.meta.itemCount ? h`<small>${ctx.meta.itemCount} items</small>` : ''}</span></a></li>
+          </ul>
+        </div>
+      </li>
+      ${navCats.slice(0, 3).map((c) => h`<li><a href="/category/${c.slug}"${current('/category/' + c.slug)}>${c.name}</a></li>`)}
+      <li><a href="/flintshire"${current('/flintshire')}>Buying in Flintshire</a></li>
       <li><a href="/about"${current('/about')}>About us</a></li>
-      <li class="nav-extra"><a href="${BUSINESS.ebayStoreUrl}">Our eBay shop</a></li>
     </ul>
     <div class="menu-panel">
       <p class="menu-heading">Shop by category</p>
@@ -205,6 +214,8 @@ ${o.main}
     <div class="footer-brand">
       ${logo('logo-footer')}
       <p class="handwritten handwritten-sm">${COPY.footer.tagline}</p>
+      <p class="local-line">${icons.pin}<span>${COPY.footer.localText}</span></p>
+      <p class="footer-partner-line">${COPY.footer.partnerHeading} <a href="${COPY.footer.partnerUrl}">${COPY.footer.partnerName}</a> – ${COPY.footer.partnerSub.toLowerCase()} across Flintshire, North Wales and the North West.</p>
     </div>
     <nav class="footer-col" aria-label="Shop">
       <h2>Shop</h2>
@@ -213,27 +224,23 @@ ${o.main}
         ${SITE_CATEGORIES.filter((c) => inStock.has(c.slug)).map((c) => h`<li><a href="/category/${c.slug}">${c.name}</a></li>`)}
       </ul>
     </nav>
-    <nav class="footer-col" aria-label="About">
-      <h2>About</h2>
+    <nav class="footer-col" aria-label="Help and information">
+      <h2>Help &amp; info</h2>
       <ul class="footer-links">
         <li><a href="/about">Our story</a></li>
         <li><a href="/flintshire">Buying in Flintshire</a></li>
-        <li><a href="/faq">Questions</a></li>
-        <li><a href="${BUSINESS.ebayStoreUrl}">Shop on eBay</a></li>
-        <li><a href="${BUSINESS.ebayContactUrl}">Contact us on eBay</a></li>
-        <li><a href="${COPY.footer.partnerUrl}">${COPY.footer.partnerName}</a></li>
+        <li><a href="/faq">Questions &amp; answers</a></li>
+        <li><a href="${COPY.bulky.url}" rel="noopener">Bulky item delivery (AnyVan)</a></li>
         <li><a href="/privacy">Privacy</a></li>
         <li><a href="/terms">Terms of use</a></li>
       </ul>
     </nav>
-    <div class="footer-col footer-partner">
-      <h2>${COPY.footer.partnerHeading}</h2>
-      <a class="partner-card" href="${COPY.footer.partnerUrl}">${icons.house}<span><strong>${COPY.footer.partnerName}</strong><small>${COPY.footer.partnerSub}</small></span></a>
-      <p>${COPY.footer.partnerText}</p>
-    </div>
-    <div class="footer-col footer-local">
-      <h2>${COPY.footer.localHeading}</h2>
-      <p class="local-line">${icons.pin}<span>${COPY.footer.localText}</span></p>
+    <div class="footer-col footer-ebay">
+      <h2>Buy on eBay</h2>
+      <p>Every item is sold through our eBay shop, with eBay’s checkout and buyer protection.</p>
+      <p class="footer-score">${icons.star}<a href="${BUSINESS.ebayFeedbackUrl}">${meta.sellerFeedbackPercent ? `${meta.sellerFeedbackPercent}%` : BUSINESS.verified.feedbackPercent} positive feedback</a></p>
+      <p><a class="btn btn-small" href="${BUSINESS.ebayStoreUrl}">Visit our eBay shop${icons.arrow}</a></p>
+      <p><a class="footer-contact" href="${BUSINESS.ebayContactUrl}">${icons.chat}Contact us on eBay</a></p>
     </div>
   </div>
   <div class="wrap footer-bottom">
