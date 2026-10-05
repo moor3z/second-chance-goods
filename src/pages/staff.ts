@@ -1,4 +1,5 @@
 import { COPY } from '../copy';
+import { ASSET_VERSION } from '../config';
 import { itemPostMessage } from '../facebook-message';
 import { formatDate } from '../format';
 import { getCategory } from '../categories';
@@ -178,7 +179,7 @@ export function marketplaceLister(ctx: RenderCtx, items: Listing[], pageNo: numb
     ${pageNo < pages ? h`<a class="pager-step" href="${m.path}?page=${pageNo + 1}">Next</a>` : ''}
   </nav>` : ''}
 </div>
-<script src="/assets/js/staff.js" defer></script>`;
+<script src="/assets/js/staff.js?v=${ASSET_VERSION}" defer></script>`;
   const res = page(ctx, { title: `${m.name} lister`, description: 'Staff only.', canonicalPath: null, noindex: true, main: h`<div data-lister="${mode}">${main}</div>`, bodyClass: 'staff' });
   return new Response(res.body, { headers: { ...Object.fromEntries(res.headers), 'cache-control': 'no-store' } });
 }
