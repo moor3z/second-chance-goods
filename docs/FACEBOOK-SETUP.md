@@ -49,6 +49,11 @@ on days with no new stock.
 5. In GitHub, edit `sync-worker/wrangler.toml`: set `FB_PAGE_ID` to the number the script printed.
    Optionally set `SITE_URL` to your domain so posts link to the website. Commit.
 
+### Automatic single posts
+New buy-it-now items priced at or above `FB_AUTO_POST_MIN_PRICE` (pounds) get their own post with photos within
+about 15 minutes of listing, at most one per sync, capped at `FB_AUTO_POST_MAX_PER_DAY`, only between 08:00 and
+21:00 UK. Leave `FB_AUTO_POST_MIN_PRICE` empty to switch this off. The digest skips anything posted this way.
+
 ### Post a single item from the lister
 Each item in `/staff/marketplace` (and the Vinted tab) has **Post to Facebook Page**: it pre-fills the text
 (title, price, condition, link) with up to four photos; edit if you like, then post. Posted items are marked

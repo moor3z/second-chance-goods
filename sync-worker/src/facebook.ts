@@ -16,6 +16,9 @@ export interface FacebookConfig {
   storeUrl: string;
   intro: string;
   outro: string;
+  /** Automatic single posts: items at or above this price (pence) get their own post. 0 = off. */
+  autoMinPricePence: number;
+  autoMaxPerDay: number;
 }
 
 interface Row { item_id: string; title: string; listing_type: string; price_pence: number; currency: string; image_urls: string; start_time: string | null }
@@ -121,6 +124,41 @@ export async function postSingleItem(db: D1Database, cfg: FacebookConfig, fetchF
     log('facebook_item_post_failed', { itemId, message: msg });
     return { status: 'failed', message: msg };
   }
+}
+
+export type AutoPostResult = { status: 'posted'; itemId: string; postId: string } | { status: 'skipped'; reason: string } | { status: 'failed'; message: string };
+
+/**
+ * Automatic single posts for higher-value new listings: at most one per run (so posts are spaced by the sync
+ * interval), capped per UK day, only between 08:00 and 21:00 UK, and never for items already posted.
+ */
+export async function autoPostNewItems(db: D1Database, cfg: FacebookConfig, fetchFn: FetchFn, now: Date, log: (e: string, d?: Record<string, unknown>) => void): Promise<AutoPostResult> {
+  if (!cfg.autoMinPricePence || cfg.autoMaxPerDay < 1) return { status: 'skipped', reason: 'auto posts are off' };
+  const hour = Number(ukHour.format(now));
+  if (hour < 8 || hour >= 21) return { status: 'skipped', reason: 'outside posting hours' };
+  const today = ukDay.format(now);
+  const st = Object.fromEntries(
+    (await db.prepare("SELECT key, value FROM sync_state WHERE key IN ('current_snapshot','fb_auto_day','fb_auto_count')").all<{ key: string; value: string }>()).results.map((r) => [r.key, r.value]),
+  );
+  if (!st.current_snapshot) return { status: 'skipped', reason: 'no catalogue yet' };
+  const count = st.fb_auto_day === today ? Number(st.fb_auto_count || 0) : 0;
+  if (count >= cfg.autoMaxPerDay) return { status: 'skipped', reason: 'daily limit reached' };
+
+  const since = new Date(now.getTime() - 86_400_000).toISOString();
+  const { results } = await db
+    .prepare("SELECT item_id FROM items WHERE snapshot_id = ? AND listing_type = 'fixed' AND price_pence >= ? AND start_time > ? AND image_urls != '[]' ORDER BY start_time DESC LIMIT 50")
+    .bind(st.current_snapshot, cfg.autoMinPricePence, since)
+    .all<{ item_id: string }>();
+  const already = await postedItems(db);
+  const next = results.find((r) => !already[r.item_id]);
+  if (!next) return { status: 'skipped', reason: 'nothing new above the threshold' };
+
+  const r = await postSingleItem(db, cfg, fetchFn, next.item_id, null, now, log);
+  if (r.status !== 'posted') return r.status === 'failed' ? { status: 'failed', message: r.message } : { status: 'skipped', reason: r.status };
+  const set = (k: string, v: string) => db.prepare('INSERT INTO sync_state (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').bind(k, v);
+  await db.batch([set('fb_auto_day', today), set('fb_auto_count', String(count + 1))]);
+  log('facebook_auto_posted', { itemId: next.item_id, postId: r.postId, todayCount: count + 1 });
+  return { status: 'posted', itemId: next.item_id, postId: r.postId };
 }
 
 export type FacebookResult = { status: 'posted'; postId: string; count: number } | { status: 'skipped'; reason: string } | { status: 'failed'; message: string } | { status: 'preview'; message: string; images: string[] };

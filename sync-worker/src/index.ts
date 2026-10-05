@@ -1,7 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 import { runSync, type SyncDeps } from './sync';
 import { realSleep, type EbayConfig } from './ebay';
-import { maybePostDailyDigest, postSingleItem, type FacebookConfig } from './facebook';
+import { autoPostNewItems, maybePostDailyDigest, postSingleItem, type FacebookConfig } from './facebook';
 import { checkSyncHealth, type AlertConfig } from './alerts';
 
 export interface Env {
@@ -29,6 +29,8 @@ export interface Env {
   SITE_URL?: string;
   FB_POST_INTRO?: string;
   FB_POST_OUTRO?: string;
+  FB_AUTO_POST_MIN_PRICE?: string;
+  FB_AUTO_POST_MAX_PER_DAY?: string;
   /** Email alerts when syncing keeps failing (optional). RESEND_API_KEY is a secret; the rest are vars. */
   RESEND_API_KEY?: string;
   ALERT_EMAIL_TO?: string;
@@ -61,6 +63,8 @@ function facebookConfig(env: Env): FacebookConfig | null {
     storeUrl: 'https://www.ebay.co.uk/str/secondchancegoodsltd',
     intro: env.FB_POST_INTRO || 'New in at Second Chance Goods – {count} fresh finds today:',
     outro: env.FB_POST_OUTRO || 'Browse everything: {link}',
+    autoMinPricePence: Math.round(Math.max(0, Number(env.FB_AUTO_POST_MIN_PRICE) || 0) * 100),
+    autoMaxPerDay: num(env.FB_AUTO_POST_MAX_PER_DAY, 6, 0, 50),
   };
 }
 
@@ -145,6 +149,7 @@ export default {
     const fb = facebookConfig(env);
     if (fb) {
       try {
+        await autoPostNewItems(env.DB, fb, (i, init) => fetch(i, init), new Date(), makeLogger(env));
         await maybePostDailyDigest(env.DB, fb, (i, init) => fetch(i, init), new Date(), makeLogger(env));
       } catch (err) {
         makeLogger(env)('facebook_unexpected_error', { message: (err as Error).message });

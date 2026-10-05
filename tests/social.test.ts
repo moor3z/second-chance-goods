@@ -62,7 +62,7 @@ test('staff sign-in: right password works, wrong one and missing key do not', as
   assert.match(await loginCookie(env), /HttpOnly; Secure; SameSite=Strict/);
 });
 
-const FB: FacebookConfig = { pageId: '1234', pageToken: 'EAAG-page-token-secret-xyz', graphVersion: 'v26.0', postHour: 18, maxItems: 10, siteUrl: 'https://www.example.co.uk', storeUrl: 'https://www.ebay.co.uk/str/x', intro: 'New in – {count} fresh finds today:', outro: 'Browse everything: {link}' };
+const FB: FacebookConfig = { pageId: '1234', pageToken: 'EAAG-page-token-secret-xyz', graphVersion: 'v26.0', postHour: 18, maxItems: 10, siteUrl: 'https://www.example.co.uk', storeUrl: 'https://www.ebay.co.uk/str/x', intro: 'New in – {count} fresh finds today:', outro: 'Browse everything: {link}', autoMinPricePence: 0, autoMaxPerDay: 6 };
 
 function fbMock(opts: { fail?: 'token' | 'feed' } = {}) {
   const calls: { url: string; body: URLSearchParams }[] = [];
@@ -181,7 +181,7 @@ test('sync alerts: email after 2 failures, reminder after 8 more, all-clear on r
   assert.ok(logs.includes('alert_email_failed'));
 });
 
-import { postSingleItem, postedItems } from '../sync-worker/src/facebook';
+import { postSingleItem, postedItems, autoPostNewItems } from '../sync-worker/src/facebook';
 import { itemPostMessage } from '../src/facebook-message';
 
 test('single-item Facebook post: default text, photos, posted record, digest skips it', async () => {
@@ -204,4 +204,31 @@ test('single-item Facebook post: default text, photos, posted record, digest ski
   assert.equal(d.status, 'posted');
   const feedMsg = m.calls.filter((c) => c.url.endsWith('/feed')).pop()!.body.get('message')!;
   assert.ok(feedMsg.includes('Toy car') && !feedMsg.includes('Vintage radio'));
+});
+
+test('automatic single posts: threshold, one per run, daily cap, posting hours, digest skips them', async () => {
+  const db = await dbWithItems(); // radio £45 (fixed), toy car £9.99 (auction), old item £5
+  await writeSnapshot(db as never, 's2', [
+    L('201', 'Ercol table', 14500, '2026-10-01T09:30:00Z'),
+    L('202', 'Welsh dresser', 32000, '2026-10-01T09:00:00Z'),
+    L('203', 'Cheap mug', 500, '2026-10-01T09:45:00Z'),
+    L('204', 'Pricey auction', 20000, '2026-10-01T09:50:00Z', { listingType: 'auction' }),
+  ]);
+  await db.prepare("UPDATE sync_state SET value = 's2' WHERE key = 'current_snapshot'").run();
+  const cfg = { ...FB, autoMinPricePence: 7500, autoMaxPerDay: 1 };
+  const m = fbMock();
+  assert.equal((await autoPostNewItems(db as never, { ...cfg, autoMinPricePence: 0 }, m.fetch as never, at('2026-10-01T10:00:00Z'), noLog)).status, 'skipped', 'off when no threshold');
+  assert.match(JSON.stringify(await autoPostNewItems(db as never, cfg, m.fetch as never, at('2026-10-01T23:30:00Z'), noLog)), /outside posting hours/);
+  const r1 = await autoPostNewItems(db as never, cfg, m.fetch as never, at('2026-10-01T10:00:00Z'), noLog);
+  assert.deepEqual([r1.status, (r1 as { itemId: string }).itemId], ['posted', '201'], 'newest qualifying item first; mug and auction ignored');
+  assert.match(m.calls.find((c) => c.url.endsWith('/feed'))!.body.get('message')!, /Ercol table – £145\.00/);
+  const r2 = await autoPostNewItems(db as never, cfg, m.fetch as never, at('2026-10-01T10:15:00Z'), noLog);
+  assert.match(JSON.stringify(r2), /daily limit/);
+  const r3 = await autoPostNewItems(db as never, { ...cfg, autoMaxPerDay: 6 }, m.fetch as never, at('2026-10-01T10:15:00Z'), noLog);
+  assert.equal((r3 as { itemId: string }).itemId, '202', 'next run posts the next item');
+  assert.match(JSON.stringify(await autoPostNewItems(db as never, { ...cfg, autoMaxPerDay: 6 }, m.fetch as never, at('2026-10-01T10:30:00Z'), noLog)), /nothing new/);
+  const d = await maybePostDailyDigest(db as never, cfg, m.fetch as never, at('2026-10-01T17:05:00Z'), noLog);
+  assert.equal(d.status, 'posted');
+  const msg = m.calls.filter((c) => c.url.endsWith('/feed')).pop()!.body.get('message')!;
+  assert.ok(msg.includes('Cheap mug') && msg.includes('Pricey auction') && !msg.includes('Ercol') && !msg.includes('dresser'), 'digest covers the rest only');
 });
