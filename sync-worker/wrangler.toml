@@ -29,6 +29,8 @@ FB_POST_HOUR = "18"
 FB_POST_MAX_ITEMS = "10"
 FB_GRAPH_VERSION = "v26.0"
 SITE_URL = "https://www.secondchancegoodsltd.co.uk"
+FB_AUTO_POST_MIN_PRICE = "10"
+FB_AUTO_POST_MAX_PER_DAY = "6"
 
 [observability]
 enabled = true
