@@ -19,7 +19,7 @@ export function scanHome(ctx: RenderCtx, recent: ScanRow[], ready: boolean): Res
 <div class="wrap">
   <form class="scan-form" id="scan-form" method="post" action="/staff/scan/identify" enctype="multipart/form-data"${ready ? '' : h` hidden`}>
     <label class="scan-drop" for="scan-photos">
-      <input id="scan-photos" name="photos" type="file" accept="image/*" multiple capture="environment">
+      <input id="scan-photos" name="photos" type="file" accept="image/*" multiple>
       <span class="scan-drop-text"><strong>Take or choose photos</strong><br>Up to 12. Include labels, model numbers and any damage.</span>
     </label>
     <ul class="scan-thumbs" id="scan-thumbs" aria-live="polite"></ul>
