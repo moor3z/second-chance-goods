@@ -126,6 +126,7 @@ export function marketplaceLister(ctx: RenderCtx, items: Listing[], pageNo: numb
 <div class="wrap page-head">
   <nav class="staff-tabs" aria-label="Lister">
     ${(Object.keys(MODES) as ListerMode[]).map((k) => h`<a href="${MODES[k].path}"${k === mode ? h` aria-current="page"` : ''}>${MODES[k].name}</a>`)}
+    <a href="/staff/scan">Price Scanner</a>
   </nav>
   <h1 class="page-title">${m.name} lister</h1>
   <p class="page-intro">${m.intro}</p>

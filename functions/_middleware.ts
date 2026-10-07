@@ -4,7 +4,7 @@ import { notFoundPage } from '../src/pages/errors';
 
 const CSP = [
   "default-src 'self'",
-  "img-src 'self' data: https://i.ebayimg.com",
+  "img-src 'self' data: blob: https://i.ebayimg.com",
   "script-src 'self'",
   "style-src 'self'",
   "font-src 'self'",

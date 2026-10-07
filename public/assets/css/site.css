@@ -525,6 +525,45 @@ main:focus { outline: none; }
 .local-cats span { display: block; color: var(--muted); font-size: .95rem; }
 .key-facts { margin-top: 0; }
 
+/* ---------------------------------------------------------------- price scanner */
+.scan-form { display: grid; gap: 1rem; max-width: 40rem; margin-bottom: 2.5rem; }
+.scan-drop { display: block; position: relative; border: 2px dashed var(--orange); border-radius: var(--radius); padding: 1.75rem 1rem; text-align: center; background: #fff7f2; cursor: pointer; }
+.scan-drop input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+.scan-drop-text { color: var(--ink-soft); }
+.scan-form label { font-weight: 600; }
+.scan-form input[type="text"] { width: 100%; height: 3rem; padding: 0 .85rem; border: 1px solid #b9c3c2; border-radius: var(--radius); font: inherit; }
+.scan-thumbs { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+.scan-thumbs li { position: relative; }
+.scan-thumbs img { width: 88px; height: 88px; object-fit: cover; border-radius: 4px; background: var(--surface); display: block; }
+.scan-remove { position: absolute; top: -.4rem; right: -.4rem; width: 1.6rem; height: 1.6rem; border-radius: 50%; border: 0; background: var(--navy); color: var(--white); font-size: 1rem; line-height: 1; cursor: pointer; }
+.scan-status { margin: 0; color: var(--muted); min-height: 1.5em; }
+.scan-recent-h { font-size: 1.3rem; margin-bottom: .75rem; }
+.scan-recent { list-style: none; margin: 0 0 2rem; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); }
+.scan-recent li + li { border-top: 1px solid var(--line); }
+.scan-recent a { display: flex; justify-content: space-between; gap: 1rem; padding: .75rem .9rem; text-decoration: none; min-height: 3rem; align-items: center; }
+.scan-recent small { color: var(--muted); white-space: nowrap; }
+.scan-result { display: grid; gap: 1.5rem; margin-bottom: 3rem; }
+.scan-thumbs-static img { width: 72px; height: 72px; }
+.price-panel { background: var(--cream); border: 1px solid #efe7da; border-radius: var(--radius); padding: 1.25rem; }
+.price-panel h2, .draft h2 { font-family: var(--serif); font-size: 1.4rem; margin-bottom: .6rem; }
+.price-query { margin: 0 0 .75rem; }
+.price-query .text-link { background: none; border: 0; cursor: pointer; font: inherit; }
+.price-links { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+.price-links .btn { width: auto; }
+.comps-summary { margin: 0 0 .6rem; }
+.comps-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
+.comps-list li { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; grid-template-rows: auto auto; gap: 0 .6rem; align-items: center; background: var(--white); border-radius: 4px; padding: .35rem .5rem; }
+.comps-list img, .comps-noimg { width: 48px; height: 48px; object-fit: cover; border-radius: 3px; grid-row: 1 / 3; background: var(--surface); }
+.comps-list a { font-size: .9rem; line-height: 1.25; text-decoration: none; }
+.comps-list .comps-price { font-weight: 700; grid-column: 3; grid-row: 1 / 3; }
+.comps-list small { grid-column: 2; color: var(--muted); font-size: .8rem; }
+.draft { border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; }
+.draft select { width: 100%; height: 2.9rem; padding: 0 .75rem; border: 1px solid #b9c3c2; border-radius: var(--radius); font: inherit; background: var(--white); }
+.lf-count { font-weight: 400; color: var(--muted); font-size: .8rem; }
+.scan-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 1rem; }
+.scan-actions .btn { width: auto; }
+.scan-actions .text-link { background: none; border: 0; cursor: pointer; font: inherit; }
+
 /* ---------------------------------------------------------------- staff tools */
 .staff-tabs { display: flex; gap: .5rem; margin-bottom: 1rem; }
 .staff-tabs a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; font-weight: 600; }
@@ -711,6 +750,7 @@ main:focus { outline: none; }
   .filters { grid-template-columns: minmax(0, 1fr); padding: 1rem; }
   .product { grid-template-columns: minmax(0, 1fr); }
   .lister-grid { grid-template-columns: minmax(0, 1fr); }
+  .price-links .btn, .scan-actions .btn { width: 100%; }
   .lister-item { padding: 1rem; }
   .lf-row { flex-direction: column; align-items: stretch; }
   .lf-row .copy-btn { width: 100%; }

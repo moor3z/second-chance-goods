@@ -26,6 +26,13 @@ export interface Env {
   SYNC_WORKER_URL?: string;
   /** Same value as the Worker's SYNC_TOKEN. Set as a Pages secret. */
   SYNC_TOKEN?: string;
+  /** Price Scanner: Claude API key (Pages secret) and optional model name. */
+  ANTHROPIC_API_KEY?: string;
+  ANTHROPIC_MODEL?: string;
+  /** Testing only: point the identifier at a mock server. */
+  ANTHROPIC_BASE_URL?: string;
+  /** Price Scanner photo storage (R2 bucket binding). */
+  SCANS?: R2Bucket;
 }
 
 export interface Coupon {
@@ -123,7 +130,7 @@ export function bestCoupon(coupons: Coupon[], pricePence: number, itemId: string
 }
 
 /** Bump when CSS/JS change so browsers fetch the new files. */
-export const ASSET_VERSION = '2026-10-05.6';
+export const ASSET_VERSION = '2026-10-07.2';
 
 export const BUSINESS = {
   legalName: 'Second Chance Goods Ltd',

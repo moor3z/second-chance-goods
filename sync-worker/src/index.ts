@@ -3,6 +3,8 @@ import { runSync, type SyncDeps } from './sync';
 import { realSleep, type EbayConfig } from './ebay';
 import { autoPostNewItems, maybePostDailyDigest, postSingleItem, type FacebookConfig } from './facebook';
 import { checkSyncHealth, type AlertConfig } from './alerts';
+import { activeComps } from './comps';
+import { getAccessToken } from './ebay';
 
 export interface Env {
   DB: D1Database;
@@ -175,6 +177,18 @@ export default {
       const preview = url.searchParams.get('preview') === '1';
       const result = await maybePostDailyDigest(env.DB, fb, (i, init) => fetch(i, init), new Date(), makeLogger(env), { force: true, preview });
       return json(result, result.status === 'failed' ? 502 : 200);
+    }
+    if (url.pathname === '/comps' && request.method === 'GET') {
+      const cfg = ebayConfig(env);
+      const q = (url.searchParams.get('q') || '').trim().slice(0, 120);
+      if (!cfg) return json({ error: 'eBay credentials are not configured' }, 503);
+      if (!q) return json({ error: 'q missing' }, 400);
+      try {
+        const token = await getAccessToken(cfg, (i, init) => fetch(i, init));
+        return json(await activeComps(cfg, (i, init) => fetch(i, init), token, q));
+      } catch (err) {
+        return json({ error: (err as Error).message }, 502);
+      }
     }
     if (url.pathname === '/facebook-post-item' && request.method === 'POST') {
       const fb = facebookConfig(env);
