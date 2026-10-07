@@ -9,6 +9,10 @@ binding = "DB"
 database_name = "scg-catalogue"
 database_id = "ce08ccdf-c519-4646-a13d-9f1871d7d2e5"
 
+[[r2_buckets]]
+binding = "SCANS"
+bucket_name = "scg-scans"
+   
 [vars]
 DATA_MODE = "live"
 # Your real domain once connected (no trailing slash). Leave as-is until you have one.
