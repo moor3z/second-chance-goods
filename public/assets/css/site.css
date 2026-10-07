@@ -548,8 +548,10 @@ main:focus { outline: none; }
 .price-panel h2, .draft h2 { font-family: var(--serif); font-size: 1.4rem; margin-bottom: .6rem; }
 .price-query { margin: 0 0 .75rem; }
 .price-query .text-link { background: none; border: 0; cursor: pointer; font: inherit; }
-.price-links { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
-.price-links .btn { width: auto; }
+.price-links { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: .75rem; }
+.price-links li { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: .25rem 1rem; align-items: center; }
+.price-links .btn { width: 100%; }
+.price-links p { margin: 0; font-size: .9rem; color: var(--ink-soft); }
 .comps-summary { margin: 0 0 .6rem; }
 .comps-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
 .comps-list li { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; grid-template-rows: auto auto; gap: 0 .6rem; align-items: center; background: var(--white); border-radius: 4px; padding: .35rem .5rem; }
@@ -750,7 +752,8 @@ main:focus { outline: none; }
   .filters { grid-template-columns: minmax(0, 1fr); padding: 1rem; }
   .product { grid-template-columns: minmax(0, 1fr); }
   .lister-grid { grid-template-columns: minmax(0, 1fr); }
-  .price-links .btn, .scan-actions .btn { width: 100%; }
+  .price-links li { grid-template-columns: minmax(0, 1fr); }
+  .scan-actions .btn { width: 100%; }
   .lister-item { padding: 1rem; }
   .lf-row { flex-direction: column; align-items: stretch; }
   .lf-row .copy-btn { width: 100%; }

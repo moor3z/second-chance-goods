@@ -65,11 +65,11 @@ export function scanResultPage(ctx: RenderCtx, row: ScanRow, result: ScanResult 
   <section class="price-panel" aria-labelledby="pp-h">
     <h2 id="pp-h">Price it</h2>
     <p class="price-query">Search used: <strong>${result.searchQuery}</strong> <button class="text-link" type="button" data-edit-query>change</button></p>
-    <div class="price-links">
-      <a class="btn" href="${links.sold}" target="_blank" rel="noopener" data-link="sold">Sold on eBay (last 90 days)</a>
-      <a class="btn btn-outline" href="${links.terapeak}" target="_blank" rel="noopener" data-link="terapeak">Terapeak research</a>
-      <a class="btn btn-outline" href="${links.active}" target="_blank" rel="noopener" data-link="active">Active listings</a>
-    </div>
+    <ul class="price-links">
+      <li><a class="btn" href="${links.sold}" target="_blank" rel="noopener" data-link="sold">Sold on eBay</a><p>What the last ones <strong>actually sold for</strong>. Start here: price to match recent sales.</p></li>
+      <li><a class="btn btn-outline" href="${links.terapeak}" target="_blank" rel="noopener" data-link="terapeak">Terapeak research</a><p>eBay’s own stats: average sold price and how many sell. Use for anything valuable or when the sold results are all over the place. Needs the shop’s eBay login.</p></li>
+      <li><a class="btn btn-outline" href="${links.active}" target="_blank" rel="noopener" data-link="active">Active listings</a><p>What others are <strong>asking</strong> right now. Useful to see the competition, but asking isn’t selling.</p></li>
+    </ul>
     <div class="comps" id="comps" data-comps-url="${compsUrl}"><p class="fb-note">Loading current asking prices…</p></div>
   </section>
 
