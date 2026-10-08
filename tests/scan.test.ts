@@ -27,16 +27,18 @@ test('comps: summarises Browse API asking prices', async () => {
   const fetchFn = async (url: string) => {
     assert.match(url, /buy\/browse\/v1\/item_summary\/search\?q=Hitachi%20AX-M67/);
     return Response.json({ itemSummaries: [
-      { title: 'Hitachi AX-M67 hifi', price: { value: '34.99', currency: 'GBP' }, condition: 'Used', itemWebUrl: 'https://www.ebay.co.uk/itm/1', image: { imageUrl: 'https://i.ebayimg.com/x.jpg' } },
-      { title: 'Hitachi AX-M67 boxed', price: { value: '59.00', currency: 'GBP' }, condition: 'Used', itemWebUrl: 'https://www.ebay.co.uk/itm/2' },
-      { title: 'Spares', price: { value: '12.50', currency: 'GBP' }, condition: 'For parts', itemWebUrl: 'https://www.ebay.co.uk/itm/3' },
+      { title: 'Hitachi AX-M67 hifi', price: { value: '34.99', currency: 'GBP' }, condition: 'Used', itemWebUrl: 'https://www.ebay.co.uk/itm/1', image: { imageUrl: 'https://i.ebayimg.com/x.jpg' }, itemCreationDate: '2026-09-28T00:00:00.000Z' },
+      { title: 'Hitachi AX-M67 boxed', price: { value: '59.00', currency: 'GBP' }, condition: 'Used', itemWebUrl: 'https://www.ebay.co.uk/itm/2', itemCreationDate: '2026-09-20T00:00:00.000Z' },
+      { title: 'Spares', price: { value: '12.50', currency: 'GBP' }, condition: 'For parts', itemWebUrl: 'https://www.ebay.co.uk/itm/3', itemCreationDate: '2026-08-01T00:00:00.000Z' },
       { title: 'US listing', price: { value: '40', currency: 'USD' }, condition: 'Used', itemWebUrl: 'https://www.ebay.com/itm/4' },
     ] });
   };
-  const c = await activeComps({ tradingUrl: 'https://api.ebay.com/ws/api.dll' } as never, fetchFn as never, 'tok', 'Hitachi AX-M67');
+  const c = await activeComps({ tradingUrl: 'https://api.ebay.com/ws/api.dll' } as never, fetchFn as never, 'tok', 'Hitachi AX-M67', new Date('2026-10-08T00:00:00Z'));
   assert.equal(c.count, 3, 'non-GBP dropped');
   assert.deepEqual([c.minPence, c.medianPence, c.maxPence], [1250, 3499, 5900]);
   assert.equal(c.items[0].image, 'https://i.ebayimg.com/x.jpg');
+  assert.deepEqual(c.items.map((i) => i.ageDays), [10, 18, 68]);
+  assert.deepEqual([c.age!.medianDays, c.age!.avgDays, c.age!.pctOver30, c.age!.pctOver60, c.age!.oldestDays], [18, 32, 33, 33, 68]);
 });
 
 import { imageMatches } from '../sync-worker/src/comps';

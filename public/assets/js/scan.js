@@ -102,9 +102,19 @@
     fetch(url).then(function (r) { return r.json(); }).then(function (j) {
       if (j.error) { comps.innerHTML = '<p class="fb-note">Asking prices unavailable: ' + j.error + '</p>'; return; }
       if (!j.count) { comps.innerHTML = '<p class="fb-note">No current UK listings found for “' + j.query + '”. Try the Sold link, or change the search.</p>'; return; }
-      var html = '<h3>On eBay right now</h3><p class="comps-summary"><strong>' + j.count + '</strong> currently listed by anyone (buy-it-now, UK): lowest <strong>' + money(j.minPence) + '</strong> · typical <strong>' + money(j.medianPence) + '</strong> · highest <strong>' + money(j.maxPence) + '</strong></p><ul class="comps-list">';
+      var html = '<h3>On eBay right now</h3><p class="comps-summary"><strong>' + j.count + '</strong> currently listed by anyone (buy-it-now, UK): lowest <strong>' + money(j.minPence) + '</strong> · typical <strong>' + money(j.medianPence) + '</strong> · highest <strong>' + money(j.maxPence) + '</strong></p>';
+      var a = j.age;
+      if (a && a.known) {
+        var verdict = a.medianDays <= 14 ? ['fast', 'Stock turns over quickly: listings don’t hang around.'] : a.medianDays <= 45 ? ['steady', 'Sells, but allow a few weeks.'] : ['slow', 'Listings are sitting unsold for a long time. Price keenly or think twice.'];
+        html += '<dl class="stat-grid age-grid is-' + verdict[0] + '">'
+          + '<div><dt>How long they’ve been sitting</dt><dd>' + dayz(a.medianDays) + '</dd><small>typical unsold listing · average ' + dayz(a.avgDays) + '</small></div>'
+          + '<div><dt>Unsold after 30 days</dt><dd>' + pct(a.pctOver30) + '</dd><small>' + pct(a.pctOver60) + ' after 60 days</small></div>'
+          + '<div><dt>Turnover</dt><dd class="age-verdict">' + verdict[0] + '</dd><small>' + verdict[1] + '</small></div>'
+          + '</dl>';
+      }
+      html += '<ul class="comps-list">';
       j.items.forEach(function (it) {
-        html += '<li>' + (it.image ? '<img src="' + it.image + '" alt="" loading="lazy">' : '<span class="comps-noimg"></span>') + '<a href="' + it.url + '" target="_blank" rel="noopener">' + it.title.replace(/</g, '&lt;') + '</a><span class="comps-price">' + money(it.pricePence) + '</span><small>' + it.condition.replace(/</g, '&lt;') + '</small></li>';
+        html += '<li>' + (it.image ? '<img src="' + it.image + '" alt="" loading="lazy">' : '<span class="comps-noimg"></span>') + '<a href="' + it.url + '" target="_blank" rel="noopener">' + it.title.replace(/</g, '&lt;') + '</a><span class="comps-price">' + money(it.pricePence) + '</span><small>' + it.condition.replace(/</g, '&lt;') + (typeof it.ageDays === 'number' ? ' · listed ' + dayz(it.ageDays) + ' ago' : '') + '</small></li>';
       });
       comps.innerHTML = html + '</ul><p class="fb-note">Asking prices, not sold prices. Use the Sold button for what actually sells.</p>';
     }).catch(function (e) { comps.innerHTML = '<p class="fb-note">Asking prices unavailable: ' + e.message + '</p>'; });

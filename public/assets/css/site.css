@@ -566,6 +566,10 @@ main:focus { outline: none; }
 .stat-grid dt { font-size: .78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
 .stat-grid dd { margin: .15rem 0 0; font-family: var(--serif); font-size: 1.35rem; font-weight: 700; line-height: 1.1; }
 .stat-grid small { display: block; color: var(--muted); font-size: .8rem; margin-top: .15rem; }
+.age-grid .age-verdict { text-transform: capitalize; }
+.age-grid.is-fast .age-verdict { color: #1e7a3c; }
+.age-grid.is-steady .age-verdict { color: #b8690a; }
+.age-grid.is-slow .age-verdict { color: #a1260d; }
 .comps-sold { display: grid; place-items: center; font-size: .7rem; font-weight: 700; color: var(--white); background: #2e8b57; }
 .comps-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
 .comps-list li { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; grid-template-rows: auto auto; gap: 0 .6rem; align-items: center; background: var(--white); border-radius: 4px; padding: .35rem .5rem; }
