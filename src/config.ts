@@ -130,7 +130,7 @@ export function bestCoupon(coupons: Coupon[], pricePence: number, itemId: string
 }
 
 /** Bump when CSS/JS change so browsers fetch the new files. */
-export const ASSET_VERSION = '2026-10-08.3';
+export const ASSET_VERSION = '2026-10-08.4';
 
 export const BUSINESS = {
   legalName: 'Second Chance Goods Ltd',

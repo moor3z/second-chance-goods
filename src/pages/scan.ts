@@ -63,6 +63,10 @@ export function scanResultPage(ctx: RenderCtx, row: ScanRow, result: ScanResult 
   <ul class="scan-thumbs scan-thumbs-static">${photoUrls.map((u, i) => h`<li><a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="Photo ${i + 1}"></a>${lensPhotoUrls[i] ? h`<a class="lens-btn" href="${lensUrl(lensPhotoUrls[i])}" target="_blank" rel="noopener" title="Search this photo with Google Lens">Lens</a>` : ''}</li>`)}</ul>
   ${lensPhotoUrls.length ? h`<p class="fb-note">Tap <strong>Lens</strong> under a photo for a Google Lens second opinion (links work for one hour).</p>` : ''}
 
+  <section class="matches comps-section" aria-label="On eBay right now">
+    <div class="comps" id="comps" data-comps-url="${compsUrl}"><p class="fb-note">Loading current asking prices…</p></div>
+  </section>
+
   ${result.ebayMatches && result.ebayMatches.length ? h`<section class="matches" aria-labelledby="mt-h">
     <h2 id="mt-h">Looks like these on eBay</h2>
     <p class="fb-note">eBay’s own image search, from your first photo. Check the exact model before trusting a price.</p>
@@ -78,7 +82,6 @@ export function scanResultPage(ctx: RenderCtx, row: ScanRow, result: ScanResult 
       <li><a class="btn btn-outline" href="${links.active}" target="_blank" rel="noopener" data-link="active">Active listings</a><p>What others are <strong>asking</strong> right now. Useful to see the competition, but asking isn’t selling.</p></li>
     </ul>
     <div class="stats" id="stats" data-stats-url="${statsUrl}"><p class="fb-note">Loading sold statistics…</p></div>
-    <div class="comps" id="comps" data-comps-url="${compsUrl}"><p class="fb-note">Loading current asking prices…</p></div>
   </section>
 
   <section class="draft" aria-labelledby="notes-h">

@@ -560,7 +560,9 @@ main:focus { outline: none; }
 .price-links p { margin: 0; font-size: .9rem; color: var(--ink-soft); }
 .comps-summary { margin: 0 0 .6rem; }
 .stats { margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid #efe7da; }
-.stats h3, .comps h3 { font-size: 1rem; font-weight: 700; margin: 0 0 .6rem; letter-spacing: .02em; }
+.stats h3 { font-size: 1rem; font-weight: 700; margin: 0 0 .6rem; letter-spacing: .02em; }
+.comps h3 { font-family: var(--serif); font-size: 1.4rem; margin-bottom: .4rem; }
+.comps-section .comps-list li { background: var(--cream); }
 .stat-grid { margin: 0 0 .9rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: .6rem; }
 .stat-grid div { background: var(--white); border-radius: 4px; padding: .6rem .75rem; }
 .stat-grid dt { font-size: .78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
