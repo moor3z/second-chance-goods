@@ -544,6 +544,12 @@ main:focus { outline: none; }
 .scan-recent small { color: var(--muted); white-space: nowrap; }
 .scan-result { display: grid; gap: 1.5rem; margin-bottom: 3rem; }
 .scan-thumbs-static img { width: 72px; height: 72px; }
+.scan-thumbs-static li { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
+.lens-btn { font-size: .75rem; font-weight: 700; text-decoration: none; color: var(--white); background: #1a73e8; border-radius: 999px; padding: .2rem .6rem; min-height: 1.6rem; display: inline-flex; align-items: center; }
+.matches { border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; }
+.matches h2 { font-family: var(--serif); font-size: 1.4rem; margin-bottom: .4rem; }
+.matches .comps-list { margin-top: .75rem; }
+.matches .comps-list li { background: var(--cream); }
 .price-panel { background: var(--cream); border: 1px solid #efe7da; border-radius: var(--radius); padding: 1.25rem; }
 .price-panel h2, .draft h2 { font-family: var(--serif); font-size: 1.4rem; margin-bottom: .6rem; }
 .price-query { margin: 0 0 .75rem; }

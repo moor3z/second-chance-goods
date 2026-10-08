@@ -1,7 +1,7 @@
 import type { Env } from '../../../src/config';
 import { appContext } from '../../../src/app';
 import { isStaff } from '../../../src/staff';
-import { identifyItem } from '../../../src/scan';
+import { identifyItem, ebayImageMatches } from '../../../src/scan';
 import { scanErrorPage } from '../../../src/pages/scan';
 
 const MAX_PHOTOS = 12;
@@ -30,7 +30,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     images.push({ data, type });
   }
   try {
-    const result = await identifyItem(env, images, notes);
+    const matches = await ebayImageMatches(env, images[0].data);
+    const result = await identifyItem(env, images, notes, matches.slice(0, 8).map((m) => m.title));
+    result.ebayMatches = matches;
     await env.DB.prepare('INSERT INTO scans (id, created_at, photo_keys, result, status) VALUES (?, ?, ?, ?, ?)')
       .bind(id, createdAt, JSON.stringify(keys), JSON.stringify(result), 'identified')
       .run();

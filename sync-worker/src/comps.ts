@@ -23,3 +23,21 @@ export async function activeComps(cfg: EbayConfig, fetchFn: FetchFn, token: stri
   const median = prices.length ? (prices.length % 2 ? prices[(prices.length - 1) / 2] : Math.round((prices[prices.length / 2 - 1] + prices[prices.length / 2]) / 2)) : null;
   return { query, count: items.length, minPence: prices[0] ?? null, medianPence: median, maxPence: prices[prices.length - 1] ?? null, items: items.slice(0, 10) };
 }
+
+/** eBay listings that look like the photo (official Browse API search_by_image). */
+export async function imageMatches(cfg: EbayConfig, fetchFn: FetchFn, token: string, imageBase64: string): Promise<CompsSummary> {
+  const base = new URL(cfg.tradingUrl).origin;
+  const res = await fetchFn(`${base}/buy/browse/v1/item_summary/search_by_image?limit=20`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}`, 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB', accept: 'application/json', 'content-type': 'application/json' },
+    body: JSON.stringify({ image: imageBase64 }),
+  });
+  if (!res.ok) throw new Error(`Browse image search: HTTP ${res.status} ${(await res.text().catch(() => '')).slice(0, 200)}`);
+  const data = (await res.json()) as { itemSummaries?: Record<string, any>[] };
+  const items: Comp[] = (data.itemSummaries || [])
+    .filter((i) => i.price && Number(i.price.value) > 0)
+    .map((i) => ({ title: String(i.title || ''), pricePence: i.price.currency === 'GBP' ? Math.round(Number(i.price.value) * 100) : 0, condition: String(i.condition || ''), url: String(i.itemWebUrl || ''), image: i.image?.imageUrl ? String(i.image.imageUrl) : null }));
+  const prices = items.map((i) => i.pricePence).filter((p) => p > 0).sort((a, b) => a - b);
+  const median = prices.length ? prices[Math.floor(prices.length / 2)] : null;
+  return { query: 'image', count: items.length, minPence: prices[0] ?? null, medianPence: median, maxPence: prices[prices.length - 1] ?? null, items: items.slice(0, 12) };
+}

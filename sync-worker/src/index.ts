@@ -3,7 +3,7 @@ import { runSync, type SyncDeps } from './sync';
 import { realSleep, type EbayConfig } from './ebay';
 import { autoPostNewItems, maybePostDailyDigest, postSingleItem, type FacebookConfig } from './facebook';
 import { checkSyncHealth, type AlertConfig } from './alerts';
-import { activeComps } from './comps';
+import { activeComps, imageMatches } from './comps';
 import { getAccessToken } from './ebay';
 
 export interface Env {
@@ -186,6 +186,18 @@ export default {
       try {
         const token = await getAccessToken(cfg, (i, init) => fetch(i, init));
         return json(await activeComps(cfg, (i, init) => fetch(i, init), token, q));
+      } catch (err) {
+        return json({ error: (err as Error).message }, 502);
+      }
+    }
+    if (url.pathname === '/image-search' && request.method === 'POST') {
+      const cfg = ebayConfig(env);
+      if (!cfg) return json({ error: 'eBay credentials are not configured' }, 503);
+      const body = (await request.json().catch(() => ({}))) as { image?: string };
+      if (!body.image || body.image.length > 7_000_000) return json({ error: 'image missing or too large' }, 400);
+      try {
+        const token = await getAccessToken(cfg, (i, init) => fetch(i, init));
+        return json(await imageMatches(cfg, (i, init) => fetch(i, init), token, body.image));
       } catch (err) {
         return json({ error: (err as Error).message }, 502);
       }

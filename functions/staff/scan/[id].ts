@@ -2,7 +2,7 @@ import type { Env } from '../../../src/config';
 import { appContext } from '../../../src/app';
 import { isStaff } from '../../../src/staff';
 import { scanResultPage, scanErrorPage, type ScanRow } from '../../../src/pages/scan';
-import type { ScanResult } from '../../../src/scan';
+import { signedPhotoUrl, type ScanResult } from '../../../src/scan';
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
   if (!(await isStaff(request, env))) return Response.redirect(new URL('/staff', request.url).toString(), 302);
@@ -14,7 +14,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   const result = JSON.parse(row.edited || row.result) as ScanResult;
   const keys = JSON.parse(row.photo_keys) as string[];
   const photoUrls = keys.map((k) => `/staff/scan/photo/${encodeURIComponent(k)}`);
-  return scanResultPage(ctx, row, result, photoUrls, `/staff/scan/comps?q=${encodeURIComponent(result.searchQuery)}`);
+  const lensUrls = env.STAFF_KEY ? await Promise.all(keys.map((k) => signedPhotoUrl(ctx.origin, k, env.STAFF_KEY!))) : [];
+  return scanResultPage(ctx, row, result, photoUrls, `/staff/scan/comps?q=${encodeURIComponent(result.searchQuery)}`, lensUrls);
 };
 
 /** Save edits, the chosen price, or discard. */

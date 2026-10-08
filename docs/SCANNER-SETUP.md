@@ -20,6 +20,12 @@ The scanner lives at `/staff/scan` (staff sign-in required). Photos → AI ident
 
 The current-asking-prices panel uses the sync Worker (`SYNC_WORKER_URL` + `SYNC_TOKEN`, already set up for the Facebook button).
 
+## Image search and Google Lens
+- **Looks like these on eBay**: every scan also runs eBay's official search-by-image on the first photo. The matching
+  listings are shown on the result page and their titles are passed to the identifier as clues.
+- **Lens** button under each photo: opens Google Lens with that photo. Google has no Lens API, so this uses a
+  time-limited (1 hour) signed link to the photo; it isn't indexed and can't be guessed.
+
 ## Using it
 1. Take or choose photos (labels, model numbers and damage help most). Photos are shrunk on the phone before upload.
 2. Add a note if something isn't visible (tested/working, missing parts, size).

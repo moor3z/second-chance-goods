@@ -38,3 +38,34 @@ test('comps: summarises Browse API asking prices', async () => {
   assert.deepEqual([c.minPence, c.medianPence, c.maxPence], [1250, 3499, 5900]);
   assert.equal(c.items[0].image, 'https://i.ebayimg.com/x.jpg');
 });
+
+import { imageMatches } from '../sync-worker/src/comps';
+import { signedPhotoUrl, verifyPhotoSig, lensUrl } from '../src/scan';
+
+test('image search: posts the photo to eBay and summarises look-alike listings', async () => {
+  const fetchFn = async (url: string, init?: RequestInit) => {
+    assert.match(url, /search_by_image\?limit=20$/);
+    assert.equal(JSON.parse(String(init?.body)).image, 'QUJD');
+    return Response.json({ itemSummaries: [
+      { title: 'Panasonic NV-HD640 VHS', price: { value: '45.00', currency: 'GBP' }, condition: 'Used', itemWebUrl: 'https://www.ebay.co.uk/itm/1', image: { imageUrl: 'https://i.ebayimg.com/a.jpg' } },
+      { title: 'Panasonic VCR US', price: { value: '60', currency: 'USD' }, condition: 'Used', itemWebUrl: 'https://www.ebay.com/itm/2' },
+    ] });
+  };
+  const r = await imageMatches({ tradingUrl: 'https://api.ebay.com/ws/api.dll' } as never, fetchFn as never, 'tok', 'QUJD');
+  assert.equal(r.count, 2);
+  assert.equal(r.items[0].pricePence, 4500);
+  assert.equal(r.items[1].pricePence, 0, 'non-GBP shown without a price');
+  assert.equal(r.medianPence, 4500);
+});
+
+test('Lens links: signed, time-limited, tamper-proof', async () => {
+  const url = await signedPhotoUrl('https://www.example.co.uk', 'scans/2026-10-08/abc/1.jpg', 'staff-secret-key-123');
+  const u = new URL(url);
+  assert.equal(u.pathname, '/scan-photo/scans%2F2026-10-08%2Fabc%2F1.jpg');
+  const e = u.searchParams.get('e')!, s = u.searchParams.get('s')!;
+  assert.equal(await verifyPhotoSig('scans/2026-10-08/abc/1.jpg', e, s, 'staff-secret-key-123'), true);
+  assert.equal(await verifyPhotoSig('scans/2026-10-08/abc/2.jpg', e, s, 'staff-secret-key-123'), false, 'different photo');
+  assert.equal(await verifyPhotoSig('scans/2026-10-08/abc/1.jpg', '1000', s, 'staff-secret-key-123'), false, 'expired');
+  assert.equal(await verifyPhotoSig('scans/2026-10-08/abc/1.jpg', e, s, 'other-key'), false, 'wrong key');
+  assert.match(lensUrl(url), /^https:\/\/lens\.google\.com\/uploadbyurl\?url=https%3A%2F%2Fwww\.example\.co\.uk%2Fscan-photo/);
+});

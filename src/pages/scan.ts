@@ -1,8 +1,8 @@
 import { ASSET_VERSION, BUSINESS } from '../config';
 import { h, raw, type Safe } from '../html';
 import { page, type RenderCtx } from '../ui';
-import { CONDITION_LABELS, researchLinks, type ScanResult } from '../scan';
-import { formatDateTime } from '../format';
+import { CONDITION_LABELS, researchLinks, lensUrl, type ScanResult } from '../scan';
+import { formatDateTime, formatMoney } from '../format';
 
 export interface ScanRow { id: string; created_at: string; photo_keys: string; result: string | null; edited: string | null; status: string; ebay_item_id: string | null }
 
@@ -49,7 +49,7 @@ const field = (label: string, id: string, value: string, opts: { multiline?: boo
     ${opts.hint ? h`<p class="fb-note">${opts.hint}</p>` : ''}
   </div>`;
 
-export function scanResultPage(ctx: RenderCtx, row: ScanRow, result: ScanResult & { pricePounds?: string }, photoUrls: string[], compsUrl: string): Response {
+export function scanResultPage(ctx: RenderCtx, row: ScanRow, result: ScanResult & { pricePounds?: string }, photoUrls: string[], compsUrl: string, lensPhotoUrls: string[] = []): Response {
   const links = researchLinks(result.searchQuery);
   const specificsText = result.specifics.map((s) => `${s.name}: ${s.value}`).join('\n');
   const main = h`
@@ -60,7 +60,14 @@ export function scanResultPage(ctx: RenderCtx, row: ScanRow, result: ScanResult 
   ${result.checkFirst.length ? h`<div class="staff-warn" role="note"><strong>Check before listing:</strong> ${result.checkFirst.join(' · ')}</div>` : ''}
 </div>
 <div class="wrap scan-result" data-scan="${row.id}">
-  <ul class="scan-thumbs scan-thumbs-static">${photoUrls.map((u, i) => h`<li><a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="Photo ${i + 1}"></a></li>`)}</ul>
+  <ul class="scan-thumbs scan-thumbs-static">${photoUrls.map((u, i) => h`<li><a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="Photo ${i + 1}"></a>${lensPhotoUrls[i] ? h`<a class="lens-btn" href="${lensUrl(lensPhotoUrls[i])}" target="_blank" rel="noopener" title="Search this photo with Google Lens">Lens</a>` : ''}</li>`)}</ul>
+  ${lensPhotoUrls.length ? h`<p class="fb-note">Tap <strong>Lens</strong> under a photo for a Google Lens second opinion (links work for one hour).</p>` : ''}
+
+  ${result.ebayMatches && result.ebayMatches.length ? h`<section class="matches" aria-labelledby="mt-h">
+    <h2 id="mt-h">Looks like these on eBay</h2>
+    <p class="fb-note">eBay’s own image search, from your first photo. Check the exact model before trusting a price.</p>
+    <ul class="comps-list">${result.ebayMatches.slice(0, 8).map((m) => h`<li>${m.image ? h`<img src="${m.image}" alt="" loading="lazy">` : h`<span class="comps-noimg"></span>`}<a href="${m.url}" target="_blank" rel="noopener">${m.title}</a><span class="comps-price">${m.pricePence ? formatMoney(m.pricePence, 'GBP') : ''}</span><small>${m.condition}</small></li>`)}</ul>
+  </section>` : ''}
 
   <section class="price-panel" aria-labelledby="pp-h">
     <h2 id="pp-h">Price it</h2>
