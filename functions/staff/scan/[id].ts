@@ -15,7 +15,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   const keys = JSON.parse(row.photo_keys) as string[];
   const photoUrls = keys.map((k) => `/staff/scan/photo/${encodeURIComponent(k)}`);
   const lensUrls = env.STAFF_KEY ? await Promise.all(keys.map((k) => signedPhotoUrl(ctx.origin, k, env.STAFF_KEY!))) : [];
-  return scanResultPage(ctx, row, result, photoUrls, `/staff/scan/comps?q=${encodeURIComponent(result.searchQuery)}`, lensUrls);
+  return scanResultPage(ctx, row, result, photoUrls, `/staff/scan/comps?q=${encodeURIComponent(result.searchQuery)}`, lensUrls, `/staff/scan/stats?q=${encodeURIComponent(result.searchQuery)}`);
 };
 
 /** Save edits, the chosen price, or discard. */

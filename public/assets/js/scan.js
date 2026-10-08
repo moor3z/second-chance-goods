@@ -68,13 +68,41 @@
   var scanId = result.getAttribute('data-scan');
   var money = function (p) { return '£' + (p / 100).toFixed(2); };
 
+  var stats = document.getElementById('stats');
+  var pct = function (n) { return n === null ? '–' : n + '%'; };
+  var dayz = function (d) { return d === null ? '–' : (d < 1 ? 'under a day' : Math.round(d) + ' day' + (Math.round(d) === 1 ? '' : 's')); };
+  function loadStats(url) {
+    if (!stats) return;
+    stats.innerHTML = '<p class="fb-note">Loading sold statistics…</p>';
+    fetch(url).then(function (r) { return r.json(); }).then(function (j) {
+      if (j.error) { stats.innerHTML = '<p class="fb-note">Sold statistics unavailable: ' + j.error + '</p>'; return; }
+      var y = j.yours;
+      var html = '<h3>Your sales, last ' + j.days + ' days</h3>';
+      if (!y.ended && !j.activeNow) { stats.innerHTML = html + '<p class="fb-note">You haven’t listed anything matching “' + j.query + '” recently. Use the Sold button to see the wider market.</p>'; return; }
+      html += '<dl class="stat-grid">'
+        + '<div><dt>Listed → sold</dt><dd>' + y.ended + ' ended · <strong>' + y.sold + ' sold</strong></dd><small>' + (y.sellThroughPct === null ? '' : pct(y.sellThroughPct) + ' sell-through') + '</small></div>'
+        + '<div><dt>Average sold price</dt><dd>' + (y.avgSoldPence === null ? '–' : money(y.avgSoldPence)) + '</dd><small>' + (y.lowestSoldPence === null ? '' : money(y.lowestSoldPence) + ' – ' + money(y.highestSoldPence)) + '</small></div>'
+        + '<div><dt>Highest sold</dt><dd>' + (y.highestSoldPence === null ? '–' : money(y.highestSoldPence)) + '</dd></div>'
+        + '<div><dt>Average time to sell</dt><dd>' + dayz(y.avgDaysToSell) + '</dd><small>' + (y.medianDaysToSell === null ? '' : 'typically ' + dayz(y.medianDaysToSell)) + '</small></div>'
+        + '<div><dt>Listed right now</dt><dd>' + j.activeNow + '</dd></div>'
+        + '</dl>';
+      if (y.recent.length) {
+        html += '<ul class="comps-list">';
+        y.recent.forEach(function (r) { html += '<li><span class="comps-noimg comps-sold">Sold</span><a href="' + r.url + '" target="_blank" rel="noopener">' + r.title.replace(/</g, '&lt;') + '</a><span class="comps-price">' + money(r.pricePence) + '</span><small>' + r.soldAt.slice(0, 10) + (r.daysToSell === null ? '' : ' · ' + dayz(r.daysToSell) + ' to sell') + '</small></li>'; });
+        html += '</ul>';
+      }
+      stats.innerHTML = html + '<p class="fb-note">From your own eBay listing history. eBay-wide sold prices are behind the Sold and Terapeak buttons.</p>';
+    }).catch(function (e) { stats.innerHTML = '<p class="fb-note">Sold statistics unavailable: ' + e.message + '</p>'; });
+  }
+  if (stats) loadStats(stats.getAttribute('data-stats-url'));
+
   var comps = document.getElementById('comps');
   function loadComps(url) {
     comps.innerHTML = '<p class="fb-note">Loading current asking prices…</p>';
     fetch(url).then(function (r) { return r.json(); }).then(function (j) {
       if (j.error) { comps.innerHTML = '<p class="fb-note">Asking prices unavailable: ' + j.error + '</p>'; return; }
       if (!j.count) { comps.innerHTML = '<p class="fb-note">No current UK listings found for “' + j.query + '”. Try the Sold link, or change the search.</p>'; return; }
-      var html = '<p class="comps-summary"><strong>' + j.count + '</strong> currently listed (buy-it-now, UK): lowest <strong>' + money(j.minPence) + '</strong> · typical <strong>' + money(j.medianPence) + '</strong> · highest <strong>' + money(j.maxPence) + '</strong></p><ul class="comps-list">';
+      var html = '<h3>On eBay right now</h3><p class="comps-summary"><strong>' + j.count + '</strong> currently listed by anyone (buy-it-now, UK): lowest <strong>' + money(j.minPence) + '</strong> · typical <strong>' + money(j.medianPence) + '</strong> · highest <strong>' + money(j.maxPence) + '</strong></p><ul class="comps-list">';
       j.items.forEach(function (it) {
         html += '<li>' + (it.image ? '<img src="' + it.image + '" alt="" loading="lazy">' : '<span class="comps-noimg"></span>') + '<a href="' + it.url + '" target="_blank" rel="noopener">' + it.title.replace(/</g, '&lt;') + '</a><span class="comps-price">' + money(it.pricePence) + '</span><small>' + it.condition.replace(/</g, '&lt;') + '</small></li>';
       });
@@ -95,6 +123,7 @@
     document.querySelector('[data-link=terapeak]').href = 'https://www.ebay.co.uk/sh/research?marketplace=EBAY-GB&keywords=' + enc + '&dayRange=90&tabName=SOLD';
     document.querySelector('[data-link=active]').href = 'https://www.ebay.co.uk/sch/i.html?_nkw=' + enc + '&_sop=15';
     loadComps('/staff/scan/comps?q=' + enc);
+    loadStats('/staff/scan/stats?q=' + enc);
     save({ searchQuery: q });
   });
 

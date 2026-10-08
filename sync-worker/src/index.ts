@@ -4,6 +4,7 @@ import { realSleep, type EbayConfig } from './ebay';
 import { autoPostNewItems, maybePostDailyDigest, postSingleItem, type FacebookConfig } from './facebook';
 import { checkSyncHealth, type AlertConfig } from './alerts';
 import { activeComps, imageMatches } from './comps';
+import { soldStats, syncHistory } from './history';
 import { getAccessToken } from './ebay';
 
 export interface Env {
@@ -148,6 +149,10 @@ const json = (data: unknown, status = 200) =>
 export default {
   async scheduled(_event: ScheduledController, env: Env): Promise<void> {
     await sync(env, 'cron', false);
+    const cfgH = ebayConfig(env);
+    if (cfgH) {
+      await syncHistory(env.DB, cfgH, (i, init) => fetch(i, init), () => getAccessToken(cfgH, (i, init) => fetch(i, init)), new Date(), makeLogger(env));
+    }
     const fb = facebookConfig(env);
     if (fb) {
       try {
@@ -189,6 +194,20 @@ export default {
       } catch (err) {
         return json({ error: (err as Error).message }, 502);
       }
+    }
+    if (url.pathname === '/sold-stats' && request.method === 'GET') {
+      const q = (url.searchParams.get('q') || '').trim().slice(0, 120);
+      if (!q) return json({ error: 'q missing' }, 400);
+      try {
+        return json(await soldStats(env.DB, q, new Date()));
+      } catch (err) {
+        return json({ error: (err as Error).message }, 500);
+      }
+    }
+    if (url.pathname === '/history-sync' && request.method === 'POST') {
+      const cfg = ebayConfig(env);
+      if (!cfg) return json({ error: 'eBay credentials are not configured' }, 503);
+      return json(await syncHistory(env.DB, cfg, (i, init) => fetch(i, init), () => getAccessToken(cfg, (i, init) => fetch(i, init)), new Date(), makeLogger(env), { force: url.searchParams.get('force') === '1' }));
     }
     if (url.pathname === '/image-search' && request.method === 'POST') {
       const cfg = ebayConfig(env);

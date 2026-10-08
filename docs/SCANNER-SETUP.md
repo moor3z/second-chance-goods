@@ -26,6 +26,17 @@ The current-asking-prices panel uses the sync Worker (`SYNC_WORKER_URL` + `SYNC_
 - **Lens** button under each photo: opens Google Lens with that photo. Google has no Lens API, so this uses a
   time-limited (1 hour) signed link to the photo; it isn't indexed and can't be guessed.
 
+## Sold statistics (your sales)
+The Worker keeps your own listing history (ended listings, sold or not, from the last 200 days) in the `ended_items`
+table and refreshes it once a day. For each scan the panel shows: listed → sold and sell-through, average / lowest /
+highest sold price, average and typical time to sell, how many you have listed right now, and the recent sales.
+
+Setup: run `migrations/0003_ended_items.sql` in the D1 console, then (once) load the last 90 days:
+`curl.exe -X POST -H "Authorization: Bearer YOUR_SYNC_TOKEN" "https://scg-ebay-sync.<you>.workers.dev/history-sync?force=1"`
+
+eBay-wide sold prices need eBay's Marketplace Insights API (approval only); until then they are one tap away via
+the Sold and Terapeak buttons. The scanner is a research tool: it does not create eBay listings.
+
 ## Using it
 1. Take or choose photos (labels, model numbers and damage help most). Photos are shrunk on the phone before upload.
 2. Add a note if something isn't visible (tested/working, missing parts, size).
@@ -33,6 +44,6 @@ The current-asking-prices panel uses the sync Worker (`SYNC_WORKER_URL` + `SYNC_
    - **Sold on eBay** – opens eBay's sold & completed results for that exact item (prices that actually sold)
    - **Terapeak research** – eBay's own 90-day sold-price tool
    - **Active listings** and a summary of current UK asking prices
-4. Correct the draft, type the price, Save, then copy the title/specifics/description into eBay (Stage 2 will list directly).
+4. Note the price you decide on and Save, so the scan is on record.
 
 Settings: `ANTHROPIC_MODEL` (optional) picks the Claude model; the house style is in `src/scan.ts`.

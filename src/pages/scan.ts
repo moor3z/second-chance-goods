@@ -1,7 +1,7 @@
 import { ASSET_VERSION, BUSINESS } from '../config';
 import { h, raw, type Safe } from '../html';
 import { page, type RenderCtx } from '../ui';
-import { CONDITION_LABELS, researchLinks, lensUrl, type ScanResult } from '../scan';
+import { researchLinks, lensUrl, type ScanResult } from '../scan';
 import { formatDateTime, formatMoney } from '../format';
 
 export interface ScanRow { id: string; created_at: string; photo_keys: string; result: string | null; edited: string | null; status: string; ebay_item_id: string | null }
@@ -13,7 +13,7 @@ export function scanHome(ctx: RenderCtx, recent: ScanRow[], ready: boolean): Res
 <div class="wrap page-head">
   <nav class="staff-tabs" aria-label="Staff tools"><a href="/staff/marketplace">Marketplace</a><a href="/staff/vinted">Vinted</a><a href="/staff/scan" aria-current="page">Price Scanner</a></nav>
   <h1 class="page-title">Price Scanner</h1>
-  <p class="page-intro">Take photos of an item. It’s identified for you, with one-tap links to what the same item sold for, and a draft listing ready to copy to eBay.</p>
+  <p class="page-intro">Take photos of an item. It’s identified for you, with sold statistics and one-tap links to what the same item sold for, so you can price it quickly.</p>
   ${ready ? '' : h`<div class="staff-warn" role="note"><strong>Not set up yet.</strong> The website needs the ANTHROPIC_API_KEY secret and the SCANS photo bucket (see docs/SCANNER-SETUP.md).</div>`}
 </div>
 <div class="wrap">
@@ -49,7 +49,7 @@ const field = (label: string, id: string, value: string, opts: { multiline?: boo
     ${opts.hint ? h`<p class="fb-note">${opts.hint}</p>` : ''}
   </div>`;
 
-export function scanResultPage(ctx: RenderCtx, row: ScanRow, result: ScanResult & { pricePounds?: string }, photoUrls: string[], compsUrl: string, lensPhotoUrls: string[] = []): Response {
+export function scanResultPage(ctx: RenderCtx, row: ScanRow, result: ScanResult & { pricePounds?: string }, photoUrls: string[], compsUrl: string, lensPhotoUrls: string[] = [], statsUrl = ''): Response {
   const links = researchLinks(result.searchQuery);
   const specificsText = result.specifics.map((s) => `${s.name}: ${s.value}`).join('\n');
   const main = h`
@@ -77,27 +77,20 @@ export function scanResultPage(ctx: RenderCtx, row: ScanRow, result: ScanResult 
       <li><a class="btn btn-outline" href="${links.terapeak}" target="_blank" rel="noopener" data-link="terapeak">Terapeak research</a><p>eBay’s own stats: average sold price and how many sell. Use for anything valuable or when the sold results are all over the place. Needs the shop’s eBay login.</p></li>
       <li><a class="btn btn-outline" href="${links.active}" target="_blank" rel="noopener" data-link="active">Active listings</a><p>What others are <strong>asking</strong> right now. Useful to see the competition, but asking isn’t selling.</p></li>
     </ul>
+    <div class="stats" id="stats" data-stats-url="${statsUrl}"><p class="fb-note">Loading sold statistics…</p></div>
     <div class="comps" id="comps" data-comps-url="${compsUrl}"><p class="fb-note">Loading current asking prices…</p></div>
   </section>
 
-  <section class="draft" aria-labelledby="draft-h">
-    <h2 id="draft-h">Draft listing</h2>
-    ${field('Title', 'title', result.title, { max: 80 })}
-    <div class="lf"><label for="condition">Condition</label>
-      <select id="condition" name="condition" data-edit>${(Object.keys(CONDITION_LABELS) as ScanResult['condition'][]).map((c) => h`<option value="${c}"${c === result.condition ? h` selected` : ''}>${CONDITION_LABELS[c]}</option>`)}</select>
-      ${result.conditionNotes ? h`<p class="fb-note">${result.conditionNotes}</p>` : ''}
-    </div>
-    <div class="lf"><span class="lf-label">Suggested eBay category</span><p class="lf-text">${result.category || 'Not sure – pick in eBay'}</p></div>
-    ${field('Price (£)', 'price', result.pricePounds || '', { hint: 'Type the price you decide on. It’s saved with the scan.' })}
-    ${field('Item specifics', 'specifics', specificsText, { multiline: true, hint: 'One per line, Name: Value. Paste into eBay’s item specifics.' })}
-    ${field('Description', 'description', result.description, { multiline: true })}
+  <section class="draft" aria-labelledby="notes-h">
+    <h2 id="notes-h">Your decision</h2>
+    ${field('Title (for your records)', 'title', result.title, { max: 80 })}
+    ${field('Price you’ve decided on (£)', 'price', result.pricePounds || '', { hint: 'Saved with the scan so you can find it again.' })}
+    ${field('Notes', 'description', result.description, { multiline: true, hint: 'Condition notes from the photos. Edit as you like.' })}
     <div class="scan-actions">
-      <button class="btn" type="button" data-save>Save draft</button>
-      <a class="btn btn-outline" href="https://www.ebay.co.uk/sl/prelist/suggest" target="_blank" rel="noopener">Open eBay listing form</a>
+      <button class="btn" type="button" data-save>Save</button>
       <button class="text-link" type="button" data-discard>Discard scan</button>
       <span class="fb-status" role="status"></span>
     </div>
-    <p class="fb-note">Stage 2 adds a one-tap <strong>List on eBay</strong> button here.</p>
   </section>
 </div>
 <script src="/assets/js/scan.js?v=${ASSET_VERSION}" defer></script>`;

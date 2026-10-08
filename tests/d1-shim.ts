@@ -40,6 +40,7 @@ export class FakeD1 {
   failOn: ((sql: string) => boolean) | null = null;
   constructor(schemaFile = 'migrations/0001_init.sql') {
     this.raw.exec(readFileSync(schemaFile, 'utf8'));
+    for (const extra of ['migrations/0002_scans.sql', 'migrations/0003_ended_items.sql']) this.raw.exec(readFileSync(extra, 'utf8'));
   }
   prepare(sql: string) {
     return new Stmt(this, sql);

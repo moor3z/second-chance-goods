@@ -69,3 +69,44 @@ test('Lens links: signed, time-limited, tamper-proof', async () => {
   assert.equal(await verifyPhotoSig('scans/2026-10-08/abc/1.jpg', e, s, 'other-key'), false, 'wrong key');
   assert.match(lensUrl(url), /^https:\/\/lens\.google\.com\/uploadbyurl\?url=https%3A%2F%2Fwww\.example\.co\.uk%2Fscan-photo/);
 });
+
+import { FakeD1 } from './d1-shim';
+import { parseEnded, soldStats, syncHistory } from '../sync-worker/src/history';
+
+const ended = (id: string, title: string, start: string, end: string, sold: number, price: string, status = 'Completed') => ({
+  ItemID: id, Title: title, ListingType: 'FixedPriceItem', Currency: 'GBP',
+  SellingStatus: { ListingStatus: status, QuantitySold: String(sold), CurrentPrice: { '#text': price, '@_currencyID': 'GBP' } },
+  ListingDetails: { StartTime: start, EndTime: end }, PrimaryCategory: { CategoryID: '4787', CategoryName: 'Sound & Vision' },
+});
+
+test('history: parses ended listings and ignores active ones', () => {
+  const e = parseEnded(ended('117400000111', 'Hitachi AX-M67', '2026-09-01T10:00:00.000Z', '2026-09-13T10:00:00.000Z', 1, '34.99'))!;
+  assert.deepEqual([e.itemId, e.sold, e.pricePence, e.currency, e.listingType], ['117400000111', true, 3499, 'GBP', 'fixed']);
+  assert.equal(parseEnded(ended('117400000112', 'Active thing', '2026-09-01T10:00:00.000Z', '2026-12-01T10:00:00.000Z', 0, '5', 'Active')), null);
+});
+
+test('history sync + sold stats: sell-through, averages, time to sell, listed now', async () => {
+  const db = new FakeD1();
+  const items = [
+    ended('117400000001', 'Hitachi AX-M67 Micro Hi-Fi', '2026-09-01T00:00:00.000Z', '2026-09-11T00:00:00.000Z', 1, '40.00'),
+    ended('117400000002', 'Hitachi AX-M67 boxed', '2026-09-05T00:00:00.000Z', '2026-09-25T00:00:00.000Z', 1, '60.00'),
+    ended('117400000003', 'Hitachi AX-M67 spares', '2026-09-01T00:00:00.000Z', '2026-10-01T00:00:00.000Z', 0, '25.00'),
+    ended('117400000004', 'Sony radio', '2026-09-01T00:00:00.000Z', '2026-09-02T00:00:00.000Z', 1, '10.00'),
+  ];
+  const fetchFn = async () => new Response(`<?xml version="1.0"?><GetSellerListResponse xmlns="urn:ebay:apis:eBLBaseComponents"><Ack>Success</Ack><PaginationResult><TotalNumberOfPages>1</TotalNumberOfPages><TotalNumberOfEntries>4</TotalNumberOfEntries></PaginationResult><ItemArray>${items.map((i) => `<Item><ItemID>${i.ItemID}</ItemID><Title>${i.Title}</Title><ListingType>FixedPriceItem</ListingType><Currency>GBP</Currency><SellingStatus><ListingStatus>${i.SellingStatus.ListingStatus}</ListingStatus><QuantitySold>${i.SellingStatus.QuantitySold}</QuantitySold><CurrentPrice currencyID="GBP">${i.SellingStatus.CurrentPrice['#text']}</CurrentPrice></SellingStatus><ListingDetails><StartTime>${i.ListingDetails.StartTime}</StartTime><EndTime>${i.ListingDetails.EndTime}</EndTime></ListingDetails><PrimaryCategory><CategoryID>4787</CategoryID><CategoryName>Sound &amp; Vision</CategoryName></PrimaryCategory></Item>`).join('')}</ItemArray></GetSellerListResponse>`, { headers: { 'content-type': 'text/xml' } });
+  const cfg = { tradingUrl: 'https://api.ebay.com/ws/api.dll', siteId: '3', compatLevel: '1451', pageSize: 200, useOutputSelector: true } as never;
+  const now = new Date('2026-10-05T12:00:00Z');
+  const r = await syncHistory(db as never, cfg, fetchFn as never, async () => 'tok', now, () => {});
+  assert.equal(r.status, 'synced', r.message);
+  assert.equal(r.fetched, 4);
+  assert.match(JSON.stringify(await syncHistory(db as never, cfg, fetchFn as never, async () => 'tok', now, () => {})), /20 hours/, 'daily guard');
+  const s = await soldStats(db as never, 'Hitachi AX-M67', now);
+  assert.equal(s.yours.ended, 3);
+  assert.equal(s.yours.sold, 2);
+  assert.equal(s.yours.sellThroughPct, 67);
+  assert.equal(s.yours.avgSoldPence, 5000);
+  assert.equal(s.yours.highestSoldPence, 6000);
+  assert.equal(s.yours.avgDaysToSell, 15, '(10 + 20) / 2');
+  assert.equal(s.yours.recent[0].title, 'Hitachi AX-M67 boxed');
+  assert.equal((await soldStats(db as never, 'Sony radio', now)).yours.avgDaysToSell, 1);
+});
